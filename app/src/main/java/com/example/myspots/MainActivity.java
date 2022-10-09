@@ -44,10 +44,10 @@ public class MainActivity extends AppCompatActivity {
         RegisterTEXT.setOnClickListener(view -> {
             startActivity(new Intent(MainActivity.this, Register.class));
         });
-       /* ForgotPasswordTEXT.setOnClickListener(view -> {
+        ForgotPasswordTEXT.setOnClickListener(view -> {
             startActivity(new Intent(MainActivity.this, Forgot_Password.class));
         });
-        */
+
 
     }
     private void LoginUser(){
