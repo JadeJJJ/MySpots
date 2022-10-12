@@ -16,6 +16,9 @@
         android:theme="@style/Theme.MySpots"
         tools:targetApi="31">
         <activity
+            android:name=".Settings"
+            android:exported="false" />
+        <activity
             android:name=".Forgot_Password"
             android:exported="false" />
         <activity
