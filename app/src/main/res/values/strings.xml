@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MySpots</string>
+    <string name="title_activity_maps_home">MapsHomeActivity</string>
 </resources>

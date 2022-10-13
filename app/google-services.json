@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "974439982024",
+    "firebase_url": "https://myspots-dbf24-default-rtdb.firebaseio.com",
+    "project_id": "myspots-dbf24",
+    "storage_bucket": "myspots-dbf24.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:974439982024:android:db6a22a9189ca346e096fd",
+        "android_client_info": {
+          "package_name": "com.example.myspots"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "974439982024-0u3h6hmtogfvd9j4hrrcgltjhaeq2j1h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8rM6wfGdPEtqEUNjpkglVyHEYgv9j8gA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "974439982024-0u3h6hmtogfvd9j4hrrcgltjhaeq2j1h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
