@@ -3,6 +3,8 @@ package com.example.myspots;
 import androidx.fragment.app.FragmentActivity;
 
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -10,24 +12,43 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.example.myspots.databinding.ActivityMapsHomeBinding;
+import com.example.myspots.databinding.ActivityMapsMainBinding;
 
-public class MapsHomeActivity extends FragmentActivity implements OnMapReadyCallback {
+import java.util.ArrayList;
+import java.util.List;
+
+public class MapsMainActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-    private ActivityMapsHomeBinding binding;
+    private ActivityMapsMainBinding binding;
+    private Spinner spnLandmarks;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = ActivityMapsHomeBinding.inflate(getLayoutInflater());
+
+        /*ArrayAdapter<String> spnAdapter = new ArrayAdapter<String>(MapsMainActivity.this, android.R.layout.simple_spinner_item, lstLandmarks);
+        spnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spnLandmarks.setAdapter(spnAdapter);*/
+
+        binding = ActivityMapsMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        spnLandmarks = findViewById(R.id.spnLandmarks);
+        List<String> lstLandmarks = new ArrayList<>();
+        lstLandmarks.add("Church");
+        lstLandmarks.add("Police");
+        lstLandmarks.add("Hospital");
+
+        ArrayAdapter<String> spnAdapter = new ArrayAdapter<String>(MapsMainActivity.this, android.R.layout.simple_spinner_item, lstLandmarks);
+        spnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spnLandmarks.setAdapter(spnAdapter);
     }
 
     /**
@@ -44,8 +65,8 @@ public class MapsHomeActivity extends FragmentActivity implements OnMapReadyCall
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng Varsity = new LatLng(-33.9797428, 18.4725543);
-        mMap.addMarker(new MarkerOptions().position(Varsity).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(Varsity));
+        LatLng sydney = new LatLng(-34, 151);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 }

@@ -32,10 +32,6 @@
             android:value="${Map_API}" />
 
         <activity
-            android:name=".MapsHomeActivity"
-            android:exported="false"
-            android:label="@string/title_activity_maps_home" />
-        <activity
             android:name=".Settings"
             android:exported="false" />
         <activity
@@ -46,6 +42,8 @@
             android:exported="false" />
         <activity
             android:name=".Register"
+            android:exported="false" />
+        <activity android:name=".MapsMainActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
