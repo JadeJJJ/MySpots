@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this,"You have Been Logged In!!!",Toast.LENGTH_SHORT).show();
                         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                         UserID = user.getUid();
-                        startActivity(new Intent(MainActivity.this, HomePage.class));
+                        startActivity(new Intent(MainActivity.this, MapsHomeActivity.class));
                     }else{
                         Toast.makeText(MainActivity.this,"You have Not Been Logged In!!!"+ task.getException().getMessage() ,Toast.LENGTH_SHORT).show();
                     }
