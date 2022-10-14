@@ -24,7 +24,7 @@ public class LandmarkListPage extends AppCompatActivity implements
     private static final int PLACE_PICKER_REQUEST = 1;
 
     // Member variables
-    private LocationListAdapter mAdapter;// this needs to be a class created
+   // private LocationListAdapter mAdapter;// this needs to be a class created
     private RecyclerView mRecyclerView;
     private boolean mIsEnabled;
     private GoogleApiClient mClient;
