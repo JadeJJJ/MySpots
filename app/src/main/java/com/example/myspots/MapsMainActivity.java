@@ -86,7 +86,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 if (LocationPermission == true) {
                                     mMap.setMyLocationEnabled(true);
                                     mMap.getUiSettings().setMyLocationButtonEnabled(true);
-
+                                    //TODO Zoom into the current location
                                 } else {
                                     mMap.setMyLocationEnabled(false);
                                     mMap.getUiSettings().setMyLocationButtonEnabled(false);
@@ -156,7 +156,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                             public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
                                 String markerName = inputName.getText().toString();
                                 String markerDes = inputDes.getText().toString();
-                                //This is where it will be stored in the database. We have the position(latlng)
+                                // TODO This is where it will be stored in the database. We have the position(latlng)
                                 mMap.addMarker(new MarkerOptions().position(latLng).title(markerName).snippet(markerDes));
                             }
                         })
