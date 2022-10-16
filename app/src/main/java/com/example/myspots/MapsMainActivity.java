@@ -18,15 +18,19 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.myspots.databinding.ActivityMapsMainBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -83,7 +87,6 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                     mMap.setMyLocationEnabled(true);
                                     mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
-
                                 } else {
                                     mMap.setMyLocationEnabled(false);
                                     mMap.getUiSettings().setMyLocationButtonEnabled(false);
@@ -105,7 +108,11 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                 alert.show();
             }
         });
+
+
     }
+
+
 
     /**
      * Manipulates the map once available.
@@ -128,6 +135,44 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
 
         mMap.addMarker(new MarkerOptions().position(CapeTown).title("Marker in Cape Town"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(CapeTown, cameraZoom));
+
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(@NonNull LatLng latLng) {
+                LinearLayout myLayout = new LinearLayout(MapsMainActivity.this);
+                myLayout.setOrientation(LinearLayout.VERTICAL);
+                EditText inputName = new EditText(MapsMainActivity.this);
+                inputName.setHint("Marker name");
+                EditText inputDes = new EditText(MapsMainActivity.this);
+                inputDes.setHint("Marker Description");
+                myLayout.addView(inputName);
+                myLayout.addView(inputDes);
+
+                final AlertDialog.Builder builder = new AlertDialog.Builder(MapsMainActivity.this);
+                //Sets the message for the dialog box
+                builder.setMessage("Do you wish to add this marker?").setCancelable(true)
+                        .setView(myLayout)
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                String markerName = inputName.getText().toString();
+                                String markerDes = inputDes.getText().toString();
+                                //This is where it will be stored in the database. We have the position(latlng)
+                                mMap.addMarker(new MarkerOptions().position(latLng).title(markerName).snippet(markerDes));
+                            }
+                        })
+                        //Negative button
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                //Cancels the dialog box
+                                dialog.cancel();
+                            }
+                        });
+                //Creates and shows the dialog box
+                final AlertDialog alert = builder.create();
+                alert.show();
+
+            }
+        });
     }
 
     private void getLocationPermission() {
