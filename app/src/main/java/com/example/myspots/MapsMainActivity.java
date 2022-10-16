@@ -139,12 +139,14 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(CapeTown, cameraZoom));
         //Add all the markers for the user
         List<Landmarks> landmarksList = db.GetLandmarksList();
-        for (Landmarks lm : landmarksList)
-        {
-            mMap.addMarker(new MarkerOptions()
-                    .position(lm.getPosition())
-                    .title(lm.getLandMarkName())
-                    .snippet(lm.getLandMarkAddress()));
+        if (!landmarksList.isEmpty()){
+            for (Landmarks lm : landmarksList)
+            {
+                mMap.addMarker(new MarkerOptions()
+                        .position(lm.getPosition())
+                        .title(lm.getLandMarkName())
+                        .snippet(lm.getLandMarkAddress()));
+            }
         }
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
