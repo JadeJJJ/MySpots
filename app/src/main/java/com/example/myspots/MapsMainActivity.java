@@ -52,6 +52,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     private int cameraZoom = 15;
     private final LatLng CapeTown = new LatLng(-33.9803833, 18.4759092);
     private Button btnCurrentPosition;
+    private DatabaseHandler db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +61,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         binding = ActivityMapsMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        db = new DatabaseHandler();
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -135,7 +137,15 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
 
         mMap.addMarker(new MarkerOptions().position(CapeTown).title("Marker in Cape Town"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(CapeTown, cameraZoom));
-        //TODO: Add all the markers for the user
+        //Add all the markers for the user
+        List<Landmarks> landmarksList = db.GetLandmarksList();
+        for (Landmarks lm : landmarksList)
+        {
+            mMap.addMarker(new MarkerOptions()
+                    .position(lm.getPosition())
+                    .title(lm.getLandMarkName())
+                    .snippet(lm.getLandMarkAddress()));
+        }
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -157,9 +167,9 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                             public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
                                 String markerName = inputName.getText().toString();
                                 String markerDes = inputDes.getText().toString();
-                                // TODO This is where it will be stored in the database. We have the position(latlng)
+                                // This is where it will be stored in the database. We have the position(latlng)
                                 Landmarks newLandmark = new Landmarks(MainActivity.UserID, markerName,markerDes,latLng);
-
+                                db.PostLandmark(newLandmark);
 
                                 mMap.addMarker(new MarkerOptions().position(latLng).title(markerName).snippet(markerDes));
                             }

@@ -16,11 +16,13 @@ import java.util.List;
 public class DatabaseHandler {
     private static FirebaseDatabase database = FirebaseDatabase.getInstance();
     private DatabaseReference landMarkRef = database.getReference("Landmarks");
-
     private List<Landmarks> landmarksList = new ArrayList<>();
 
+    public DatabaseHandler() {
+    }
+
     //get the list of landmarks for a user
-    public List<Landmarks> getLandmarksList(){
+    public List<Landmarks> GetLandmarksList(){
         landMarkRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
