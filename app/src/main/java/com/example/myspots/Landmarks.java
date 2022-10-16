@@ -3,24 +3,23 @@ package com.example.myspots;
 import com.google.android.gms.maps.model.LatLng;
 
 public class Landmarks {
-    private int userId;
+    private String userId;
     private String landMarkName;
     private String landMarkAddress;
     private LatLng position;
 
-
-    public Landmarks(int userId, String landMarkName, String landMarkAddress, LatLng position) {
+    public Landmarks(String userId, String landMarkName, String landMarkAddress, LatLng position) {
         this.userId = userId;
         this.landMarkName = landMarkName;
         this.landMarkAddress = landMarkAddress;
         this.position = position;
     }
 
-    public int getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 

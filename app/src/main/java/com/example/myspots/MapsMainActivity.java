@@ -135,6 +135,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
 
         mMap.addMarker(new MarkerOptions().position(CapeTown).title("Marker in Cape Town"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(CapeTown, cameraZoom));
+        //TODO: Add all the markers for the user
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -157,6 +158,9 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 String markerName = inputName.getText().toString();
                                 String markerDes = inputDes.getText().toString();
                                 // TODO This is where it will be stored in the database. We have the position(latlng)
+                                Landmarks newLandmark = new Landmarks(MainActivity.UserID, markerName,markerDes,latLng);
+
+
                                 mMap.addMarker(new MarkerOptions().position(latLng).title(markerName).snippet(markerDes));
                             }
                         })
