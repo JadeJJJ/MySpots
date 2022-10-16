@@ -15,6 +15,9 @@ public class Landmarks {
         this.position = position;
     }
 
+    public Landmarks() {
+    }
+
     public String getUserId() {
         return userId;
     }
