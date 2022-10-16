@@ -139,6 +139,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(CapeTown, cameraZoom));
         //Add all the markers for the user
         List<Landmarks> landmarksList = db.GetLandmarksList();
+        Toast.makeText(this, landmarksList.get(0).getLandMarkName(), Toast.LENGTH_SHORT).show(); //
         if (!landmarksList.isEmpty()){
             for (Landmarks lm : landmarksList)
             {
