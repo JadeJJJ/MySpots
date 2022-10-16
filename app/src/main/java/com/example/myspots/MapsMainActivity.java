@@ -143,7 +143,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
             for (Landmarks lm : landmarksList)
             {
                 mMap.addMarker(new MarkerOptions()
-                        .position(lm.getPosition())
+                        .position(new LatLng(lm.getLatitude(), lm.getLongitude()))
                         .title(lm.getLandMarkName())
                         .snippet(lm.getLandMarkAddress()));
             }
@@ -170,7 +170,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 String markerName = inputName.getText().toString();
                                 String markerDes = inputDes.getText().toString();
                                 // This is where it will be stored in the database. We have the position(latlng)
-                                Landmarks newLandmark = new Landmarks(MainActivity.UserID, markerName,markerDes,latLng);
+                                Landmarks newLandmark = new Landmarks(MainActivity.UserID, markerName,markerDes,latLng.latitude,latLng.longitude);
                                 db.PostLandmark(newLandmark);
 
                                 mMap.addMarker(new MarkerOptions().position(latLng).title(markerName).snippet(markerDes));

@@ -6,13 +6,15 @@ public class Landmarks {
     private String userId;
     private String landMarkName;
     private String landMarkAddress;
-    private LatLng position;
+    private Double Latitude;
+    private Double longitude;
 
-    public Landmarks(String userId, String landMarkName, String landMarkAddress, LatLng position) {
+    public Landmarks(String userId, String landMarkName, String landMarkAddress, Double latitude, Double longitude) {
         this.userId = userId;
         this.landMarkName = landMarkName;
         this.landMarkAddress = landMarkAddress;
-        this.position = position;
+        Latitude = latitude;
+        this.longitude = longitude;
     }
 
     public Landmarks() {
@@ -42,11 +44,19 @@ public class Landmarks {
         this.landMarkAddress = landMarkAddress;
     }
 
-    public LatLng getPosition() {
-        return position;
+    public Double getLatitude() {
+        return Latitude;
     }
 
-    public void setPosition(LatLng position) {
-        this.position = position;
+    public void setLatitude(Double latitude) {
+        Latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
     }
 }
