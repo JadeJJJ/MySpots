@@ -70,6 +70,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     private LatLng startPos;
     private LatLng endPos;
     private Button btnDirections;
+    private Button btnFind;
     //handling landmarks from the database
     private static FirebaseDatabase database = FirebaseDatabase.getInstance();
     private DatabaseReference landMarkRef = database.getReference("Landmarks");
@@ -148,6 +149,42 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
             }
         });
 
+        btnFind.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String selectedType = spnLandmarks.getSelectedItem().toString();
+                if (selectedType.equals("Historical"))
+                {
+                    landMarkRef.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            for (DataSnapshot pulledData : snapshot.getChildren())
+                            {
+                                Landmarks landmark = pulledData.getValue(Landmarks.class);
+                                if (landmark.getLandmarkType().equals("Historical"))
+                                {
+                                    double lat = pulledData.child("latitude").getValue(Double.class);
+                                    double lng = pulledData.child("longitude").getValue(Double.class);
+                                    LatLng pos = new LatLng(lat,lng);
+                                    String name = landmark.getLandMarkName();
+                                    Toast.makeText(MapsMainActivity.this, name, Toast.LENGTH_SHORT).show();
+                                    String address = landmark.getLandMarkAddress();
+                                    mMap.addMarker(new MarkerOptions()
+                                            .position(pos)
+                                            .title(name)
+                                            .snippet(address));
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+                }
+            }
+        });
 
     }
 
@@ -176,34 +213,8 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(CapeTown, cameraZoom));
         //Add all the markers for the user
         List<Landmarks> landmarksList = GetLandmarksList();
-        //Toast.makeText(this, landmarksList.get(0).getLandMarkName(), Toast.LENGTH_SHORT).show(); //
-        landMarkRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot pulled : snapshot.getChildren()){
-                    Landmarks lm = pulled.getValue(Landmarks.class);
-                    landmarksList.add(lm);
-                    mMap.addMarker(new MarkerOptions()
-                            .position(new LatLng(lm.getLatitude(), lm.getLongitude()))
-                            .title(lm.getLandMarkName())
-                            .snippet(lm.getLandMarkAddress()));
-                }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                //Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
-            }
-        });
-      // if (!landmarksList.isEmpty()){
-      //     for (Landmarks lm : landmarksList)
-      //     {
-      //         mMap.addMarker(new MarkerOptions()
-      //                 .position(new LatLng(lm.getLatitude(), lm.getLongitude()))
-      //                 .title(lm.getLandMarkName())
-      //                 .snippet(lm.getLandMarkAddress()));
-      //     }
-      // }
+
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -214,11 +225,21 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                 inputName.setHint("Marker name");
                 EditText inputDes = new EditText(MapsMainActivity.this);
                 inputDes.setHint("Marker Description");
+                Spinner spnLandmarkType = new Spinner(MapsMainActivity.this);
+                List<String> lstLandmarks = new ArrayList<>();
+                lstLandmarks.add("Historical");
+                lstLandmarks.add("Modern");
+                lstLandmarks.add("Popular");
+
+                ArrayAdapter<String> spnAdapter = new ArrayAdapter<String>(MapsMainActivity.this, android.R.layout.simple_spinner_item, lstLandmarks);
+                spnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spnLandmarkType.setAdapter(spnAdapter);
                 myLayout.addView(inputName);
                 myLayout.addView(inputDes);
+                myLayout.addView(spnLandmarkType);
                 //----------------------------------------------------------------------------------
                 //TODO Put the code for the snapping the marker here
-
+/*
                 //Code Gotten from: http://theoryapp.com/parse-json-in-java/
                 StringBuilder urlBuild = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
                 urlBuild.append("location="+ startPos.latitude + "," + startPos.longitude);
@@ -253,12 +274,12 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                     Double Lat = loc.getDouble("lat");
                     Double Lng = loc.getDouble("lng");
                     /*System.out.println("lat: " + loc.getDouble("lat") +
-                            ", lng: " + loc.getDouble("lng"));*/
+                            ", lng: " + loc.getDouble("lng"));
 
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
+*/
 
                 //----------------------------------------------------------------------------------
                 final AlertDialog.Builder builder = new AlertDialog.Builder(MapsMainActivity.this);
@@ -269,8 +290,9 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                             public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
                                 String markerName = inputName.getText().toString();
                                 String markerDes = inputDes.getText().toString();
+                                String selectedType = spnLandmarkType.getSelectedItem().toString();
                                 // This is where it will be stored in the database. We have the position(latlng)
-                                Landmarks newLandmark = new Landmarks(MainActivity.UserID, markerName,markerDes,latLng.latitude,latLng.longitude);
+                                Landmarks newLandmark = new Landmarks(MainActivity.UserID, markerName,markerDes,latLng.latitude,latLng.longitude, selectedType);
                                 db.PostLandmark(newLandmark);
 
                                 mMap.addMarker(new MarkerOptions().position(latLng).title(markerName).snippet(markerDes));
@@ -290,6 +312,36 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
 
             }
         });
+        //displayMarkers();
+    }
+
+    private void displayMarkers() {
+        landMarkRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot pulledData : snapshot.getChildren())
+                {
+                    Landmarks landmark = pulledData.getValue(Landmarks.class);
+                    double lat = pulledData.child("latitude").getValue(Double.class);
+                    double lng = pulledData.child("longitude").getValue(Double.class);
+                    LatLng pos = new LatLng(lat,lng);
+                    String name = landmark.getLandMarkName();
+                    Toast.makeText(MapsMainActivity.this, name, Toast.LENGTH_SHORT).show();
+                    String address = landmark.getLandMarkAddress();
+                    mMap.addMarker(new MarkerOptions()
+                            .position(pos)
+                            .title(name)
+                            .snippet(address));
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
     }
 
     private void getLocationPermission() {
