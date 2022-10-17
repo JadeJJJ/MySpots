@@ -44,16 +44,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import org.json.JSONObject;
-
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class MapsMainActivity extends FragmentActivity implements OnMapReadyCallback {
 
