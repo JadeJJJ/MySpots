@@ -141,6 +141,8 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         btnDirections.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mMap.clear();
+                displayMarkers();
                 Object[] myObject = new Object[2];
                 String url = getDirectionsUrl();
                 GetDirectionsData getDirectionsData = new GetDirectionsData();
@@ -338,6 +340,17 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
 
             }
         });
+        displayMarkers();
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(@NonNull Marker marker) {
+                endPos = new LatLng(marker.getPosition().latitude, marker.getPosition().longitude);
+                return false;
+            }
+        });
+    }
+
+    private void displayMarkers() {
         landMarkRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -384,35 +397,6 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                     }
                 }
             }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
-        //displayMarkers();
-    }
-
-    private void displayMarkers() {
-        landMarkRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot pulledData : snapshot.getChildren())
-                {
-                    Landmarks landmark = pulledData.getValue(Landmarks.class);
-                    double lat = pulledData.child("latitude").getValue(Double.class);
-                    double lng = pulledData.child("longitude").getValue(Double.class);
-                    LatLng pos = new LatLng(lat,lng);
-                    String name = landmark.getLandMarkName();
-                    Toast.makeText(MapsMainActivity.this, name, Toast.LENGTH_SHORT).show();
-                    String address = landmark.getLandMarkAddress();
-                    mMap.addMarker(new MarkerOptions()
-                            .position(pos)
-                            .title(name)
-                            .snippet(address));
-
-                }
-            }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
 
