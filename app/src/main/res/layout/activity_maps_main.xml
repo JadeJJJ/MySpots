@@ -32,7 +32,7 @@
             android:contentDescription="@string/app_name" />
 
         <Button
-            android:id="@+id/findLocationButton"
+            android:id="@+id/btnFindLocation"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="find" />
