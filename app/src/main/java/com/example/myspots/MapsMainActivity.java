@@ -37,10 +37,22 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.myspots.databinding.ActivityMapsMainBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class MapsMainActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -58,6 +70,10 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     private LatLng startPos;
     private LatLng endPos;
     private Button btnDirections;
+    //handling landmarks from the database
+    private static FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private DatabaseReference landMarkRef = database.getReference("Landmarks");
+    private List<Landmarks> landmarksList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,7 +175,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         mMap.addMarker(new MarkerOptions().position(CapeTown).title("Marker in Cape Town"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(CapeTown, cameraZoom));
         //Add all the markers for the user
-        List<Landmarks> landmarksList = db.GetLandmarksList();
+        List<Landmarks> landmarksList = GetLandmarksList();
         //Toast.makeText(this, landmarksList.get(0).getLandMarkName(), Toast.LENGTH_SHORT).show(); //
         if (!landmarksList.isEmpty()){
             for (Landmarks lm : landmarksList)
@@ -182,7 +198,51 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                 inputDes.setHint("Marker Description");
                 myLayout.addView(inputName);
                 myLayout.addView(inputDes);
+                //----------------------------------------------------------------------------------
+                //TODO Put the code for the snapping the marker here
 
+                //Code Gotten from: http://theoryapp.com/parse-json-in-java/
+                StringBuilder urlBuild = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+                urlBuild.append("location="+ startPos.latitude + "," + startPos.longitude);
+                urlBuild.append("&radius=1500");
+                urlBuild.append("&key=" + Map_API);
+                String urlNearby = urlBuild.toString(); // gets the url using nearby places Maybe put this in a class
+                try {
+
+                    //Building URL
+                    urlNearby = URLEncoder.encode(getNearbyPlace(), "UTF-8");
+                    URL url = new URL(urlNearby);
+                    // read from the URL
+                    Scanner scan = new Scanner(url.openStream());
+                    String str = new String();
+                    while (scan.hasNext())
+                        str += scan.nextLine();
+                    scan.close();
+                    // build a JSON object
+                    JSONObject obj = new JSONObject(str);
+                    if (! obj.getString("status").equals("OK"))
+                        return;
+
+                    // get the first result
+                    JSONObject res = obj.getJSONArray("results").getJSONObject(0);
+                    //get the address
+                    String Address = res.getString("formatted_address");
+                    //get the name
+                    String locName = res.getString("name");
+                    //Get the position
+                    JSONObject loc =
+                            res.getJSONObject("geometry").getJSONObject("location");
+                    Double Lat = loc.getDouble("lat");
+                    Double Lng = loc.getDouble("lng");
+                    /*System.out.println("lat: " + loc.getDouble("lat") +
+                            ", lng: " + loc.getDouble("lng"));*/
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+                //----------------------------------------------------------------------------------
                 final AlertDialog.Builder builder = new AlertDialog.Builder(MapsMainActivity.this);
                 //Sets the message for the dialog box
                 builder.setMessage("Do you wish to add this marker?").setCancelable(true)
@@ -312,6 +372,33 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         googleDirectionsUrl.append("&destination=" + endPos.latitude + "," + endPos.longitude);
         googleDirectionsUrl.append("&key=" + Map_API);
         return googleDirectionsUrl.toString();
+    }
+
+    private List<Landmarks> GetLandmarksList(){
+        landMarkRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot pulled : snapshot.getChildren()){
+                    Landmarks lm = pulled.getValue(Landmarks.class);
+                    landmarksList.add(lm);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                //Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
+            }
+        });
+        return landmarksList;
+    }
+
+    private String getNearbyPlace()
+    {
+        StringBuilder url = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+        url.append("location="+ startPos.latitude + "," + startPos.longitude);
+        url.append("&radius=1500");
+        url.append("&key=" + Map_API);
+        return url.toString();
     }
 
 }
