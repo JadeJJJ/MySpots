@@ -194,7 +194,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                 //----------------------------------------------------------------------------------
                 //TODO Put the code for the snapping the marker here
                 /*Object[] myObject = new Object[2];
-                String url = getNearbyPlace();
+                String url = getNearbyPlace(); // gets the url using nearby places Maybe put this in a class
                 GetDirectionsData getDirectionsData = new GetDirectionsData();
                 myObject[0] = mMap;
                 myObject[1] = url;
