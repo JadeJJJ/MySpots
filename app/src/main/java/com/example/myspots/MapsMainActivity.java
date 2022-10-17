@@ -154,6 +154,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
             @Override
             public void onClick(View view) {
                 String selectedType = spnLandmarks.getSelectedItem().toString();
+                mMap.clear();
                     landMarkRef.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -162,12 +163,11 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 Landmarks landmark = pulledData.getValue(Landmarks.class);
                                 if (landmark.getLandmarkType().equals("Historical") && selectedType.equals("Historical"))
                                 {
-                                    mMap.clear();
+
                                     double lat = pulledData.child("latitude").getValue(Double.class);
                                     double lng = pulledData.child("longitude").getValue(Double.class);
                                     LatLng pos = new LatLng(lat,lng);
                                     String name = landmark.getLandMarkName();
-                                    Toast.makeText(MapsMainActivity.this, name, Toast.LENGTH_SHORT).show();
                                     String address = landmark.getLandMarkAddress();
                                     mMap.addMarker(new MarkerOptions()
                                             .position(pos)
@@ -176,12 +176,10 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 }
                                 else if (landmark.getLandmarkType().equals("Modern") && selectedType.equals("Modern"))
                                 {
-                                    mMap.clear();
                                     double lat = pulledData.child("latitude").getValue(Double.class);
                                     double lng = pulledData.child("longitude").getValue(Double.class);
                                     LatLng pos = new LatLng(lat,lng);
                                     String name = landmark.getLandMarkName();
-                                    Toast.makeText(MapsMainActivity.this, name, Toast.LENGTH_SHORT).show();
                                     String address = landmark.getLandMarkAddress();
                                     mMap.addMarker(new MarkerOptions()
                                             .position(pos)
@@ -191,12 +189,10 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 }
                                 else if (landmark.getLandmarkType().equals("Popular") && selectedType.equals("Popular"))
                                 {
-                                    mMap.clear();
                                     double lat = pulledData.child("latitude").getValue(Double.class);
                                     double lng = pulledData.child("longitude").getValue(Double.class);
                                     LatLng pos = new LatLng(lat,lng);
                                     String name = landmark.getLandMarkName();
-                                    Toast.makeText(MapsMainActivity.this, name, Toast.LENGTH_SHORT).show();
                                     String address = landmark.getLandMarkAddress();
                                     mMap.addMarker(new MarkerOptions()
                                             .position(pos)
@@ -339,6 +335,57 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                 //Creates and shows the dialog box
                 final AlertDialog alert = builder.create();
                 alert.show();
+
+            }
+        });
+        landMarkRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot pulledData : snapshot.getChildren())
+                {
+                    Landmarks landmark = pulledData.getValue(Landmarks.class);
+                    if (landmark.getLandmarkType().equals("Historical"))
+                    {
+                        double lat = pulledData.child("latitude").getValue(Double.class);
+                        double lng = pulledData.child("longitude").getValue(Double.class);
+                        LatLng pos = new LatLng(lat,lng);
+                        String name = landmark.getLandMarkName();
+                        String address = landmark.getLandMarkAddress();
+                        mMap.addMarker(new MarkerOptions()
+                                .position(pos)
+                                .title(name)
+                                .snippet(address));
+                    }
+                    if (landmark.getLandmarkType().equals("Modern"))
+                    {
+                        double lat = pulledData.child("latitude").getValue(Double.class);
+                        double lng = pulledData.child("longitude").getValue(Double.class);
+                        LatLng pos = new LatLng(lat,lng);
+                        String name = landmark.getLandMarkName();
+                        String address = landmark.getLandMarkAddress();
+                        mMap.addMarker(new MarkerOptions()
+                                .position(pos)
+                                .title(name)
+                                .snippet(address)
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                    }
+                    if (landmark.getLandmarkType().equals("Popular"))
+                    {
+                        double lat = pulledData.child("latitude").getValue(Double.class);
+                        double lng = pulledData.child("longitude").getValue(Double.class);
+                        LatLng pos = new LatLng(lat,lng);
+                        String name = landmark.getLandMarkName();
+                        String address = landmark.getLandMarkAddress();
+                        mMap.addMarker(new MarkerOptions()
+                                .position(pos)
+                                .title(name)
+                                .snippet(address)
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    }
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
 
             }
         });
