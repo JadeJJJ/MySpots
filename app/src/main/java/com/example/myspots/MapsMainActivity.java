@@ -192,14 +192,14 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                 myLayout.addView(inputName);
                 myLayout.addView(inputDes);
                 //----------------------------------------------------------------------------------
-                Object[] myObject = new Object[2];
+                //TODO Put the code for the snapping the marker here
+                /*Object[] myObject = new Object[2];
                 String url = getNearbyPlace();
                 GetDirectionsData getDirectionsData = new GetDirectionsData();
                 myObject[0] = mMap;
                 myObject[1] = url;
-                getDirectionsData.execute(myObject);
+                getDirectionsData.execute(myObject);*/
                 //----------------------------------------------------------------------------------
-
                 final AlertDialog.Builder builder = new AlertDialog.Builder(MapsMainActivity.this);
                 //Sets the message for the dialog box
                 builder.setMessage("Do you wish to add this marker?").setCancelable(true)
