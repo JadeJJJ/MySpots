@@ -9,17 +9,29 @@ public class Landmarks {
     private Double Latitude;
     private Double longitude;
 
-    public Landmarks(String userId, String landMarkName, String landMarkAddress, Double latitude, Double longitude) {
+
+
+    private String landmarkType;
+
+    public Landmarks(String userId, String landMarkName, String landMarkAddress, Double latitude, Double longitude, String landmarkType) {
         this.userId = userId;
         this.landMarkName = landMarkName;
         this.landMarkAddress = landMarkAddress;
-        Latitude = latitude;
+        this.Latitude = latitude;
         this.longitude = longitude;
+        this.landmarkType = landmarkType;
     }
 
     public Landmarks() {
     }
 
+    public String getLandmarkType() {
+        return landmarkType;
+    }
+
+    public void setLandmarkType(String landmarkType) {
+        this.landmarkType = landmarkType;
+    }
     public String getUserId() {
         return userId;
     }
