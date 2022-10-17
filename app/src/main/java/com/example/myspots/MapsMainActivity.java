@@ -44,16 +44,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import org.json.JSONObject;
-
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class MapsMainActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -77,10 +69,11 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     private DatabaseReference landMarkRef = database.getReference("Landmarks");
     private List<Landmarks> landmarksList = new ArrayList<>();
 
+    String userID;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        userID = getIntent().getStringExtra("userID");
         binding = ActivityMapsMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -163,7 +156,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                             for (DataSnapshot pulledData : snapshot.getChildren())
                             {
                                 Landmarks landmark = pulledData.getValue(Landmarks.class);
-                                if (landmark.getLandmarkType().equals("Historical") && selectedType.equals("Historical"))
+                                if (landmark.getLandmarkType().equals("Historical") && selectedType.equals("Historical") && landmark.getUserId().equals(userID))
                                 {
 
                                     double lat = pulledData.child("latitude").getValue(Double.class);
@@ -176,7 +169,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                             .title(name)
                                             .snippet(address));
                                 }
-                                else if (landmark.getLandmarkType().equals("Modern") && selectedType.equals("Modern"))
+                                else if (landmark.getLandmarkType().equals("Modern") && selectedType.equals("Modern") && landmark.getUserId().equals(userID))
                                 {
                                     double lat = pulledData.child("latitude").getValue(Double.class);
                                     double lng = pulledData.child("longitude").getValue(Double.class);
@@ -189,7 +182,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                             .snippet(address)
                                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
                                 }
-                                else if (landmark.getLandmarkType().equals("Popular") && selectedType.equals("Popular"))
+                                else if (landmark.getLandmarkType().equals("Popular") && selectedType.equals("Popular") && landmark.getUserId().equals(userID))
                                 {
                                     double lat = pulledData.child("latitude").getValue(Double.class);
                                     double lng = pulledData.child("longitude").getValue(Double.class);
@@ -230,9 +223,6 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-
-        // Add a marker in Sydney and move the camera
 
         getDeviceLocation();
         updateUI();
@@ -357,7 +347,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                 for (DataSnapshot pulledData : snapshot.getChildren())
                 {
                     Landmarks landmark = pulledData.getValue(Landmarks.class);
-                    if (landmark.getLandmarkType().equals("Historical"))
+                    if (landmark.getLandmarkType().equals("Historical") && landmark.getUserId().equals(userID))
                     {
                         double lat = pulledData.child("latitude").getValue(Double.class);
                         double lng = pulledData.child("longitude").getValue(Double.class);
@@ -369,7 +359,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 .title(name)
                                 .snippet(address));
                     }
-                    if (landmark.getLandmarkType().equals("Modern"))
+                    if (landmark.getLandmarkType().equals("Modern") && landmark.getUserId().equals(userID))
                     {
                         double lat = pulledData.child("latitude").getValue(Double.class);
                         double lng = pulledData.child("longitude").getValue(Double.class);
@@ -382,7 +372,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 .snippet(address)
                                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
                     }
-                    if (landmark.getLandmarkType().equals("Popular"))
+                    if (landmark.getLandmarkType().equals("Popular") && landmark.getUserId().equals(userID))
                     {
                         double lat = pulledData.child("latitude").getValue(Double.class);
                         double lng = pulledData.child("longitude").getValue(Double.class);
@@ -491,7 +481,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                     }
                 });
             }
-        } catch (SecurityException e)  {
+         } catch (SecurityException e)  {
             Log.e("Exception: %s", e.getMessage(), e);
         }
     }
@@ -517,7 +507,6 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                //Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
             }
         });
         return landmarksList;
