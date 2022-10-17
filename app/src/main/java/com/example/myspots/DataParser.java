@@ -3,7 +3,7 @@ package com.example.myspots;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+//Reference: Priyanka: https://github.com/priyankapakhale/GoogleMaps-Directions/blob/5452e456b9e074c4641bb5e492749081351d65c4/mapsnearbyplaces/DataParser.java
 public class DataParser {
     public String[] parseDirections(String jsonData)
     {

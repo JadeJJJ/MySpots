@@ -170,15 +170,33 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         //Add all the markers for the user
         List<Landmarks> landmarksList = GetLandmarksList();
         //Toast.makeText(this, landmarksList.get(0).getLandMarkName(), Toast.LENGTH_SHORT).show(); //
-        if (!landmarksList.isEmpty()){
-            for (Landmarks lm : landmarksList)
-            {
-                mMap.addMarker(new MarkerOptions()
-                        .position(new LatLng(lm.getLatitude(), lm.getLongitude()))
-                        .title(lm.getLandMarkName())
-                        .snippet(lm.getLandMarkAddress()));
+        landMarkRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot pulled : snapshot.getChildren()){
+                    Landmarks lm = pulled.getValue(Landmarks.class);
+                    landmarksList.add(lm);
+                    mMap.addMarker(new MarkerOptions()
+                            .position(new LatLng(lm.getLatitude(), lm.getLongitude()))
+                            .title(lm.getLandMarkName())
+                            .snippet(lm.getLandMarkAddress()));
+                }
             }
-        }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                //Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
+            }
+        });
+      // if (!landmarksList.isEmpty()){
+      //     for (Landmarks lm : landmarksList)
+      //     {
+      //         mMap.addMarker(new MarkerOptions()
+      //                 .position(new LatLng(lm.getLatitude(), lm.getLongitude()))
+      //                 .title(lm.getLandMarkName())
+      //                 .snippet(lm.getLandMarkAddress()));
+      //     }
+      // }
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
