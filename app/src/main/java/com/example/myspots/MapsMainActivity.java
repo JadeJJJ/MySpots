@@ -2,6 +2,8 @@ package com.example.myspots;
 
 import static android.content.ContentValues.TAG;
 
+import static com.example.myspots.BuildConfig.Map_API;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -53,6 +55,9 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     private final LatLng CapeTown = new LatLng(-33.9803833, 18.4759092);
     private Button btnCurrentPosition;
     private DatabaseHandler db;
+    private LatLng startPos;
+    private LatLng endPos;
+    private Button btnDirections;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +67,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         setContentView(binding.getRoot());
 
         db = new DatabaseHandler();
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -88,6 +94,8 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 if (LocationPermission == true) {
                                     mMap.setMyLocationEnabled(true);
                                     mMap.getUiSettings().setMyLocationButtonEnabled(true);
+                                    getDeviceLocation();
+                                    //startPos = new LatLng(mMap.getMyLocation().getLatitude(), mMap.getMyLocation().getLongitude());
                                     //TODO Zoom into the current location
                                 } else {
                                     mMap.setMyLocationEnabled(false);
@@ -108,6 +116,19 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                 //Creates and shows the dialog box
                 final AlertDialog alert = builder.create();
                 alert.show();
+            }
+        });
+
+        btnDirections = findViewById(R.id.btnDirections);
+        btnDirections.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Object[] myObject = new Object[2];
+                String url = getDirectionsUrl();
+                GetDirectionsData getDirectionsData = new GetDirectionsData();
+                myObject[0] = mMap;
+                myObject[1] = url;
+                getDirectionsData.execute(myObject);
             }
         });
 
@@ -139,7 +160,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(CapeTown, cameraZoom));
         //Add all the markers for the user
         List<Landmarks> landmarksList = db.GetLandmarksList();
-        Toast.makeText(this, landmarksList.get(0).getLandMarkName(), Toast.LENGTH_SHORT).show(); //
+        //Toast.makeText(this, landmarksList.get(0).getLandMarkName(), Toast.LENGTH_SHORT).show(); //
         if (!landmarksList.isEmpty()){
             for (Landmarks lm : landmarksList)
             {
@@ -175,6 +196,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 db.PostLandmark(newLandmark);
 
                                 mMap.addMarker(new MarkerOptions().position(latLng).title(markerName).snippet(markerDes));
+                                endPos = latLng;
                             }
                         })
                         //Negative button
@@ -264,13 +286,14 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                             if (lastKnownLocation != null) {
                                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                         new LatLng(lastKnownLocation.getLatitude(),
-                                                lastKnownLocation.getLongitude()), 11));
+                                                lastKnownLocation.getLongitude()), 15));
+                                startPos = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
                             }
                         } else {
                             Log.d(TAG, "Current location is null. Using defaults.");
                             Log.e(TAG, "Exception: %s", task.getException());
                             mMap.moveCamera(CameraUpdateFactory
-                                    .newLatLngZoom(CapeTown, 11));
+                                    .newLatLngZoom(CapeTown, 15));
                             mMap.getUiSettings().setMyLocationButtonEnabled(false);
 
                         }
@@ -281,4 +304,14 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
             Log.e("Exception: %s", e.getMessage(), e);
         }
     }
+
+    private String getDirectionsUrl()
+    {
+        StringBuilder googleDirectionsUrl = new StringBuilder("https://maps.googleapis.com/maps/api/directions/json?");
+        googleDirectionsUrl.append("origin="+ startPos.latitude + "," + startPos.longitude);
+        googleDirectionsUrl.append("&destination=" + endPos.latitude + "," + endPos.longitude);
+        googleDirectionsUrl.append("&key=" + Map_API);
+        return googleDirectionsUrl.toString();
+    }
+
 }
