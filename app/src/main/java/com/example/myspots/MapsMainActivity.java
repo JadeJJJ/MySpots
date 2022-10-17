@@ -37,6 +37,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.myspots.databinding.ActivityMapsMainBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.security.Permission;
 import java.util.ArrayList;
@@ -58,6 +63,10 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     private LatLng startPos;
     private LatLng endPos;
     private Button btnDirections;
+    //handling landmarks from the database
+    private static FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private DatabaseReference landMarkRef = database.getReference("Landmarks");
+    private List<Landmarks> landmarksList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,7 +168,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         mMap.addMarker(new MarkerOptions().position(CapeTown).title("Marker in Cape Town"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(CapeTown, cameraZoom));
         //Add all the markers for the user
-        List<Landmarks> landmarksList = db.GetLandmarksList();
+        List<Landmarks> landmarksList = GetLandmarksList();
         //Toast.makeText(this, landmarksList.get(0).getLandMarkName(), Toast.LENGTH_SHORT).show(); //
         if (!landmarksList.isEmpty()){
             for (Landmarks lm : landmarksList)
@@ -312,6 +321,24 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         googleDirectionsUrl.append("&destination=" + endPos.latitude + "," + endPos.longitude);
         googleDirectionsUrl.append("&key=" + Map_API);
         return googleDirectionsUrl.toString();
+    }
+
+    private List<Landmarks> GetLandmarksList(){
+        landMarkRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot pulled : snapshot.getChildren()){
+                    Landmarks lm = pulled.getValue(Landmarks.class);
+                    landmarksList.add(lm);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                //Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
+            }
+        });
+        return landmarksList;
     }
 
 }
