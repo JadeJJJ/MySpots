@@ -43,9 +43,16 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class MapsMainActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -193,12 +200,48 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                 myLayout.addView(inputDes);
                 //----------------------------------------------------------------------------------
                 //TODO Put the code for the snapping the marker here
-                /*Object[] myObject = new Object[2];
-                String url = getNearbyPlace(); // gets the url using nearby places Maybe put this in a class
-                GetDirectionsData getDirectionsData = new GetDirectionsData();
-                myObject[0] = mMap;
-                myObject[1] = url;
-                getDirectionsData.execute(myObject);*/
+
+                //Code Gotten from: http://theoryapp.com/parse-json-in-java/
+                StringBuilder urlBuild = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+                urlBuild.append("location="+ startPos.latitude + "," + startPos.longitude);
+                urlBuild.append("&radius=1500");
+                urlBuild.append("&key=" + Map_API);
+                String urlNearby = urlBuild.toString(); // gets the url using nearby places Maybe put this in a class
+                try {
+
+                    //Building URL
+                    urlNearby = URLEncoder.encode(getNearbyPlace(), "UTF-8");
+                    URL url = new URL(urlNearby);
+                    // read from the URL
+                    Scanner scan = new Scanner(url.openStream());
+                    String str = new String();
+                    while (scan.hasNext())
+                        str += scan.nextLine();
+                    scan.close();
+                    // build a JSON object
+                    JSONObject obj = new JSONObject(str);
+                    if (! obj.getString("status").equals("OK"))
+                        return;
+
+                    // get the first result
+                    JSONObject res = obj.getJSONArray("results").getJSONObject(0);
+                    //get the address
+                    String Address = res.getString("formatted_address");
+                    //get the name
+                    String locName = res.getString("name");
+                    //Get the position
+                    JSONObject loc =
+                            res.getJSONObject("geometry").getJSONObject("location");
+                    Double Lat = loc.getDouble("lat");
+                    Double Lng = loc.getDouble("lng");
+                    /*System.out.println("lat: " + loc.getDouble("lat") +
+                            ", lng: " + loc.getDouble("lng"));*/
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
                 //----------------------------------------------------------------------------------
                 final AlertDialog.Builder builder = new AlertDialog.Builder(MapsMainActivity.this);
                 //Sets the message for the dialog box
