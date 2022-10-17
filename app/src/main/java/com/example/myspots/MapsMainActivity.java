@@ -191,6 +191,14 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                 inputDes.setHint("Marker Description");
                 myLayout.addView(inputName);
                 myLayout.addView(inputDes);
+                //----------------------------------------------------------------------------------
+                Object[] myObject = new Object[2];
+                String url = getNearbyPlace();
+                GetDirectionsData getDirectionsData = new GetDirectionsData();
+                myObject[0] = mMap;
+                myObject[1] = url;
+                getDirectionsData.execute(myObject);
+                //----------------------------------------------------------------------------------
 
                 final AlertDialog.Builder builder = new AlertDialog.Builder(MapsMainActivity.this);
                 //Sets the message for the dialog box
@@ -339,6 +347,15 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
             }
         });
         return landmarksList;
+    }
+
+    private String getNearbyPlace()
+    {
+        StringBuilder url = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+        url.append("location="+ startPos.latitude + "," + startPos.longitude);
+        url.append("&radius=1500");
+        url.append("&key=" + Map_API);
+        return url.toString();
     }
 
 }
