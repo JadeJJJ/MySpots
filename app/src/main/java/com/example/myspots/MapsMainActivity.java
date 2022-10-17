@@ -31,6 +31,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -91,9 +92,9 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
 
         spnLandmarks = findViewById(R.id.spnLandmarks);
         List<String> lstLandmarks = new ArrayList<>();
-        lstLandmarks.add("Church");
-        lstLandmarks.add("Police");
-        lstLandmarks.add("Hospital");
+        lstLandmarks.add("Historical");
+        lstLandmarks.add("Modern");
+        lstLandmarks.add("Popular");
 
         ArrayAdapter<String> spnAdapter = new ArrayAdapter<String>(MapsMainActivity.this, android.R.layout.simple_spinner_item, lstLandmarks);
         spnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -148,21 +149,20 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                 getDirectionsData.execute(myObject);
             }
         });
-
+        btnFind = findViewById(R.id.btnFindLocation);
         btnFind.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String selectedType = spnLandmarks.getSelectedItem().toString();
-                if (selectedType.equals("Historical"))
-                {
                     landMarkRef.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
                             for (DataSnapshot pulledData : snapshot.getChildren())
                             {
                                 Landmarks landmark = pulledData.getValue(Landmarks.class);
-                                if (landmark.getLandmarkType().equals("Historical"))
+                                if (landmark.getLandmarkType().equals("Historical") && selectedType.equals("Historical"))
                                 {
+                                    mMap.clear();
                                     double lat = pulledData.child("latitude").getValue(Double.class);
                                     double lng = pulledData.child("longitude").getValue(Double.class);
                                     LatLng pos = new LatLng(lat,lng);
@@ -174,6 +174,36 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                             .title(name)
                                             .snippet(address));
                                 }
+                                else if (landmark.getLandmarkType().equals("Modern") && selectedType.equals("Modern"))
+                                {
+                                    mMap.clear();
+                                    double lat = pulledData.child("latitude").getValue(Double.class);
+                                    double lng = pulledData.child("longitude").getValue(Double.class);
+                                    LatLng pos = new LatLng(lat,lng);
+                                    String name = landmark.getLandMarkName();
+                                    Toast.makeText(MapsMainActivity.this, name, Toast.LENGTH_SHORT).show();
+                                    String address = landmark.getLandMarkAddress();
+                                    mMap.addMarker(new MarkerOptions()
+                                            .position(pos)
+                                            .title(name)
+                                            .snippet(address)
+                                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                                }
+                                else if (landmark.getLandmarkType().equals("Popular") && selectedType.equals("Popular"))
+                                {
+                                    mMap.clear();
+                                    double lat = pulledData.child("latitude").getValue(Double.class);
+                                    double lng = pulledData.child("longitude").getValue(Double.class);
+                                    LatLng pos = new LatLng(lat,lng);
+                                    String name = landmark.getLandMarkName();
+                                    Toast.makeText(MapsMainActivity.this, name, Toast.LENGTH_SHORT).show();
+                                    String address = landmark.getLandMarkAddress();
+                                    mMap.addMarker(new MarkerOptions()
+                                            .position(pos)
+                                            .title(name)
+                                            .snippet(address)
+                                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                                }
                             }
                         }
 
@@ -182,7 +212,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
 
                         }
                     });
-                }
+
             }
         });
 
