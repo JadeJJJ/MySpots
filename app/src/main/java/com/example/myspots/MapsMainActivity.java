@@ -74,6 +74,11 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     private static FirebaseDatabase database = FirebaseDatabase.getInstance();
     private DatabaseReference landMarkRef = database.getReference("Landmarks");
     private List<Landmarks> landmarksList = new ArrayList<>();
+    //these need to be here for adding to the database
+    private String Address = null;
+    private String locName =null;
+    private Double Lat = null;
+    private Double Lng = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -203,10 +208,12 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
 
                 //Code Gotten from: http://theoryapp.com/parse-json-in-java/
                 StringBuilder urlBuild = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
-                urlBuild.append("location="+ startPos.latitude + "," + startPos.longitude);
+                urlBuild.append("location="+ latLng.latitude + "," + latLng.longitude);
                 urlBuild.append("&radius=1500");
                 urlBuild.append("&key=" + Map_API);
                 String urlNearby = urlBuild.toString(); // gets the url using nearby places Maybe put this in a class
+                // Attributes and the location
+
                 try {
 
                     //Building URL
@@ -225,17 +232,14 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
 
                     // get the first result
                     JSONObject res = obj.getJSONArray("results").getJSONObject(0);
-                    //get the address
-                    String Address = res.getString("formatted_address");
-                    //get the name
-                    String locName = res.getString("name");
-                    //Get the position
+                    //get the attributes
+                     Address = res.getString("formatted_address");
+                     locName = res.getString("name");
+                    //Get the position object
                     JSONObject loc =
                             res.getJSONObject("geometry").getJSONObject("location");
-                    Double Lat = loc.getDouble("lat");
-                    Double Lng = loc.getDouble("lng");
-                    /*System.out.println("lat: " + loc.getDouble("lat") +
-                            ", lng: " + loc.getDouble("lng"));*/
+                     Lat = loc.getDouble("lat");
+                     Lng = loc.getDouble("lng");
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -252,11 +256,11 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 String markerName = inputName.getText().toString();
                                 String markerDes = inputDes.getText().toString();
                                 // This is where it will be stored in the database. We have the position(latlng)
-                                Landmarks newLandmark = new Landmarks(MainActivity.UserID, markerName,markerDes,latLng.latitude,latLng.longitude);
+                                Landmarks newLandmark = new Landmarks(MainActivity.UserID, locName, Address ,Lat, Lng);
                                 db.PostLandmark(newLandmark);
 
-                                mMap.addMarker(new MarkerOptions().position(latLng).title(markerName).snippet(markerDes));
-                                endPos = latLng;
+                                mMap.addMarker(new MarkerOptions().position(new LatLng(Lat,Lng)).title(locName).snippet(Address));
+                                endPos = new LatLng(Lat,Lng);
                             }
                         })
                         //Negative button
