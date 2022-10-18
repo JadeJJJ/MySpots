@@ -2,12 +2,15 @@ package com.example.myspots;
 
 import static com.example.myspots.BuildConfig.Map_API;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -71,6 +74,7 @@ public class LocationGetterUtil {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
+
         new FetchLandmarkData().execute(urlNearby);
 
 /* OLD CODE
@@ -147,7 +151,32 @@ public class LocationGetterUtil {
                             closeLocation.getJSONObject("geometry").getJSONObject("location");
                     Double Lat = loc.getDouble("lat");
                     Double Lng = loc.getDouble("lng");
-                    output = new Landmarks(MainActivity.UserID, locName, Address, Lat, Lng, "SET THIS IN THE DIALOG BOX");
+                    //output = new Landmarks(MainActivity.UserID, locName, Address, Lat, Lng, "SET THIS IN THE DIALOG BOX");
+
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(MapsMainActivity.this);
+                    //Sets the message for the dialog box
+                    builder.setMessage("Do you wish to add this marker?").setCancelable(true)
+                            .setView(myLayout)
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                    String selectedType = spnLandmarkType.getSelectedItem().toString();
+                                    // This is where it will be stored in the database. We have the position(latlng)
+                                    Landmarks newLandmark = new Landmarks(MainActivity.UserID, locName,Address,Lat,Lng, selectedType);
+                                    db.PostLandmark(newLandmark); // posting to db
+                                    mMap.addMarker(new MarkerOptions().position(new LatLng(Lat,Lng)).title(locName).snippet(Address)); //creating marker on map
+                                    endPos = new LatLng(Lat,Lng);
+                                }
+                            })
+                            //Negative button
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                    //Cancels the dialog box
+                                    dialog.cancel();
+                                }
+                            });
+                    //Creates and shows the dialog box
+                    final AlertDialog alert = builder.create();
+                    alert.show();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
