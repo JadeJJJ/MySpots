@@ -48,7 +48,7 @@ public class Settings extends AppCompatActivity implements NavigationView.OnNavi
                 break;
             case R.id.nav_LandmarkListPage:
 
-                // startActivity(new Intent(HomePage.this, LandmarkListPage.class));
+                // startActivity(new Intent(Settings.this, LandmarkListPage.class));
                 break;
 
         }
