@@ -795,6 +795,12 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                 // Position the map's camera at the location of the marker.
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markerLatLng,
                         15));
+                // clearing the arrays
+                likelyPlaceNames = null;
+                likelyPlaceAddresses = null;
+                likelyPlaceAttributions = null;
+                likelyPlaceLatLngs = null;
+
             }
         };
 
