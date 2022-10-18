@@ -8,22 +8,7 @@ import java.util.HashMap;
 
 //Reference: Priyanka: https://github.com/priyankapakhale/GoogleMaps-Directions/blob/5452e456b9e074c4641bb5e492749081351d65c4/mapsnearbyplaces/DataParser.java
 public class DataParser {
-    private HashMap<String,String> getDuration(JSONArray googleDirectionsJson)
-    {
-        HashMap<String, String> googleDirectionsMap = new HashMap<>();
-        String duration = "";
-        String distance = "";
-        try
-        {
-            duration = googleDirectionsJson.getJSONObject(0).getJSONObject("duration").getString("text");
-            distance = googleDirectionsJson.getJSONObject(0).getJSONObject("distance").getString("text");
-            googleDirectionsMap.put("duration", duration);
-            googleDirectionsMap.put("distance", distance);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return googleDirectionsMap;
-    }
+
     public String[] parseDirections(String jsonData)
     {
         JSONArray jsonArray = null;

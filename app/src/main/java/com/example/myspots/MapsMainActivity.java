@@ -43,15 +43,26 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.maps.model.DistanceMatrix;
+import com.google.maps.model.DistanceMatrixRow;
 
+
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.Permission;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
@@ -529,4 +540,61 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         return url.toString();
     }
 
+    private void getDuration(JSONArray googleDirectionsJson) {
+       // String startMeasurement = "origin=" + startPos.latitude + "," + startPos.longitude;
+       // String endMeasurement = "destination=" + endPos.latitude + "," + endPos.longitude;
+       // String sensor = "sensor=false";
+       // String mode = "mode = driving";
+       // String parameters = startMeasurement + "&" + endMeasurement + "&" + sensor + "&" + mode;
+       // String outputType = "json";
+       // String url = "https://maps.googleapis.com/,aps/api/directions/" + outputType + "?" + parameters;
+       // String responceUrl = downloadURL(url);
+       // String duration = "";
+       // String distance = "";
+       //
+       // duration = responceUrl.getJSONArray("routes").getJSONObject(routeIndex).get.getString("text");
+       // distance = googleDirectionsJson.getJSONObject(0).getJSONObject("distance").getString("text");
+       // googleDirectionsMap.put("duration", duration);
+       // googleDirectionsMap.put("distance", distance);
+        String apiKey = BuildConfig.Map_API;
+        LatLng startPosition = new LatLng(startPos.latitude, startPos.longitude);
+        LatLng endPosition = new LatLng(endPos.latitude, endPos.longitude);
+        GoogleDirection.withServerKey(apiKey)
+//
+    }
+    private String downloadURL(String myURL) throws IOException
+    {
+        String myData = "";
+        InputStream inputStream = null;
+        HttpURLConnection myUrlConn = null;
+        try
+        {
+            URL myUrl = new URL(myURL);
+            myUrlConn = (HttpURLConnection) myUrl.openConnection();
+            myUrlConn.connect();
+            inputStream = myUrlConn.getInputStream();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            StringBuffer stringBuffer = new StringBuffer();
+            String myLine = "";
+            while ((myLine = bufferedReader.readLine()) != null)
+            {
+                stringBuffer.append(myLine);
+            }
+            myData = stringBuffer.toString();
+            bufferedReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            inputStream.close();
+            myUrlConn.disconnect();
+        }
+        return myData;
+    }
+
+    private void calculateTheDistance()
+    {
+        LatLng origin = startPos;
+        LatLng destination = endPos;
+        var service = new com.google.maps.DistanceMatrixService();
+    }
 }
