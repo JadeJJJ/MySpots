@@ -33,6 +33,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.myspots.databinding.ActivityMapsMainBinding;
@@ -70,10 +71,12 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     private List<Landmarks> landmarksList = new ArrayList<>();
 
     String userID;
+    String mapMode;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         userID = getIntent().getStringExtra("userID");
+        mapMode = getIntent().getStringExtra("mapMode");
         binding = ActivityMapsMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -223,7 +226,12 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
+        mapMode = Settings.mapMode;
+        if(mapMode.equals("Night")){
+            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(MapsMainActivity.this,R.raw.night_mode_json));
+        }else{
+            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(MapsMainActivity.this,R.raw.day_mode_json));
+        }
         getDeviceLocation();
         updateUI();
 
