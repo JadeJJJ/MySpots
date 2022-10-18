@@ -9,6 +9,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import com.google.android.gms.maps.model.PointOfInterest;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import android.Manifest;
@@ -359,6 +360,61 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                 return false;
             }
         });
+
+        mMap.setOnPoiClickListener(new GoogleMap.OnPoiClickListener() {
+            @Override
+            public void onPoiClick(@NonNull PointOfInterest poi) {
+
+                //Setting up the layout of the alert
+                LinearLayout myLayout = new LinearLayout(MapsMainActivity.this);
+                myLayout.setOrientation(LinearLayout.VERTICAL);
+
+                EditText edtDescription = new EditText(MapsMainActivity.this);
+                edtDescription.setHint("Marker Description");
+
+                Spinner spnLandmarkType = new Spinner(MapsMainActivity.this);
+                List<String> lstLandmarks = new ArrayList<>();
+                lstLandmarks.add("Historical");
+                lstLandmarks.add("Modern");
+                lstLandmarks.add("Popular");
+                ArrayAdapter<String> spnAdapter = new ArrayAdapter<String>(MapsMainActivity.this, android.R.layout.simple_spinner_item, lstLandmarks);
+                spnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spnLandmarkType.setAdapter(spnAdapter);
+
+                myLayout.addView(edtDescription);
+                myLayout.addView(spnLandmarkType);
+                Marker poiMarker = mMap.addMarker(new MarkerOptions()
+                        .position(poi.latLng)
+                        .title(poi.name));
+                poiMarker.showInfoWindow();
+                final AlertDialog.Builder builder = new AlertDialog.Builder(MapsMainActivity.this);
+                //Sets the message for the dialog box
+                builder.setMessage("Do you wish to add a marker at "+poi.name+"?").setCancelable(true)
+                        .setView(myLayout)
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                String selectedType = spnLandmarkType.getSelectedItem().toString();
+                                String description = edtDescription.getText().toString();
+                                LatLng poiLL = poi.latLng;
+                                // This is where it will be stored in the database. We have the position(latlng)
+                                Landmarks newLandmark = new Landmarks(MainActivity.UserID, poi.name,description,poiLL.latitude,poiLL.longitude, selectedType);
+                                db.PostLandmark(newLandmark); // posting to db
+                                mMap.addMarker(new MarkerOptions().position(poiLL).title(poi.name).snippet(description)); //creating marker on map
+                                endPos = poiLL;
+                            }
+                        })
+                        //Negative button
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                //Cancels the dialog box
+                                dialog.cancel();
+                            }
+                        });
+                //Creates and shows the dialog box
+                final AlertDialog alert = builder.create();
+                alert.show();
+            }
+        });
     }
 
     private void displayMarkers() {
@@ -597,6 +653,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
             FindCurrentPlaceRequest request =
                     FindCurrentPlaceRequest.newInstance(placeFields);
 
+
             // Get the likely places - that is, the businesses and other points of interest that
             // are the best match for the device's current location.
             @SuppressWarnings("MissingPermission") final
@@ -772,15 +829,28 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
             }
         }
     }
-//FROM GOOGLE PLACES DIALOG
+
+//FROM GOOGLE PLACES DIALOG-------------------------------------------------------------------------
     private void openPlacesDialog() {
         // Ask the user to choose the place where they are now.
+        Spinner spnLandmarkType = new Spinner(MapsMainActivity.this);
+        List<String> lstLandmarks = new ArrayList<>();
+        lstLandmarks.add("Historical");
+        lstLandmarks.add("Modern");
+        lstLandmarks.add("Popular");
+        ArrayAdapter<String> spnAdapter = new ArrayAdapter<String>(MapsMainActivity.this, android.R.layout.simple_spinner_item, lstLandmarks);
+        spnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spnLandmarkType.setAdapter(spnAdapter);
+
+
+        //DialogInterface. .addView(spnLandmarkType);
         DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // The "which" argument contains the position of the selected item.
                 LatLng markerLatLng = likelyPlaceLatLngs[which];
                 String markerSnippet = likelyPlaceAddresses[which];
+                String selectedType = spnLandmarkType.getSelectedItem().toString();
                 if (likelyPlaceAttributions[which] != null) {
                     markerSnippet = markerSnippet + "\n" + likelyPlaceAttributions[which];
                 }
@@ -791,7 +861,8 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                         .title(likelyPlaceNames[which])
                         .position(markerLatLng)
                         .snippet(markerSnippet));
-
+                Landmarks loc = new Landmarks(MainActivity.UserID, likelyPlaceNames[which], markerSnippet,markerLatLng.latitude,markerLatLng.longitude,selectedType);
+                db.PostLandmark(loc);
                 // Position the map's camera at the location of the marker.
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markerLatLng,
                         15));
@@ -808,6 +879,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Please pick a place")
                 .setItems(likelyPlaceNames, listener)
+                .setView(spnLandmarkType)
                 .show();
     }
 
