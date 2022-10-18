@@ -74,7 +74,7 @@ public class Settings extends AppCompatActivity implements NavigationView.OnNavi
                 break;
             case R.id.nav_SignOut:
 
-                startActivity(new Intent(Settings.this, Register.class));
+                startActivity(new Intent(Settings.this, MainActivity.class));
                 break;
         }
         return true;
