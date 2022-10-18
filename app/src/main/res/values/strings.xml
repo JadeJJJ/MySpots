@@ -3,4 +3,6 @@
     <string name="title_activity_maps_home">MapsHomeActivity</string>
     <string name="title_activity_maps_main">MapsMainActivity</string>
     <string name="locations">Locations</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
 </resources>

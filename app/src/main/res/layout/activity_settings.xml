@@ -1,88 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".Settings">
 
-    <TextView
-        android:id="@+id/textView17"
+
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:gravity="center_horizontal"
-        android:text="SETTINGS"
-        android:textSize="34sp" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_margin="3dp">
 
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="33dp" />
+        <TextView
+            android:id="@+id/textView17"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_horizontal"
+            android:text="SETTINGS"
+            android:textSize="34sp" />
 
-    <TextView
-        android:id="@+id/textView8"
-        android:layout_width="93dp"
-        android:layout_height="29dp"
-        android:text="General"
-        android:textColor="#FAF8F8" />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="33dp" />
 
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="17dp" />
+        <TextView
+            android:id="@+id/textView8"
+            android:layout_width="93dp"
+            android:layout_height="29dp"
+            android:text="General"
+            android:textColor="#FAF8F8" />
 
-    <TextView
-        android:id="@+id/textView9"
-        android:layout_width="62dp"
-        android:layout_height="wrap_content"
-        android:text="Units"
-        android:textColor="#F3EFEF" />
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="17dp" />
 
-    <RadioButton
-        android:id="@+id/radioButton4"
+        <TextView
+            android:id="@+id/textView9"
+            android:layout_width="62dp"
+            android:layout_height="wrap_content"
+            android:text="Units"
+            android:textColor="#F3EFEF" />
+
+        <RadioButton
+            android:id="@+id/radioButton4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Kilometres" />
+
+        <RadioButton
+            android:id="@+id/radioButton5"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="Miles" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="20dp" />
+
+        <Switch
+            android:id="@+id/switch1"
+            android:layout_width="199dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Ligh/Dark Mode:" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="20dp" />
+
+        <Switch
+            android:id="@+id/switch2"
+            android:layout_width="201dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Offline Maps:" />
+
+        <TextView
+            android:id="@+id/textView12"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Landmarks"
+            android:textColor="#F8F2F2" />
+
+        <Spinner
+            android:id="@+id/spinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/app_name"
+            android:minHeight="48dp" />
+
+    </LinearLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_side_menu"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Kilometres" />
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:menu="@menu/navigation_menu">
 
-    <RadioButton
-        android:id="@+id/radioButton5"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:text="Miles" />
+    </com.google.android.material.navigation.NavigationView>
 
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="20dp" />
-
-    <Switch
-        android:id="@+id/switch1"
-        android:layout_width="199dp"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:text="Ligh/Dark Mode:" />
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="20dp" />
-
-    <Switch
-        android:id="@+id/switch2"
-        android:layout_width="201dp"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:text="Offline Maps:" />
-
-    <TextView
-        android:id="@+id/textView12"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Landmarks"
-        android:textColor="#F8F2F2" />
-
-    <Spinner
-        android:id="@+id/spinner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/app_name"
-        android:minHeight="48dp" />
-
-</LinearLayout>
+</androidx.drawerlayout.widget.DrawerLayout>
