@@ -2,6 +2,7 @@ package com.example.myspots;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.navigation.NavigationView;
@@ -23,10 +24,27 @@ public class Settings extends AppCompatActivity implements NavigationView.OnNavi
     private ActionBarDrawerToggle mToggle; //DylanA
     private NavigationView navView; //DylanA
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+
+// NAV DRAWER---------------------------------------------------------------------------------------
+        // enable ActionBar app icon to behave as action to toggle nav drawer
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);//DylanA
+        getSupportActionBar().setHomeButtonEnabled(true);
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);//DylanA EVERY PAGE NEEDS A DRAWERLAYOUT ID
+        mDrawerLayout.addDrawerListener(mToggle);//DylanA
+
+        mToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.open, R.string.close); //DylanA
+        mToggle.syncState();//DylanA
+
+        navView = findViewById(R.id.nav_side_menu) ;
+        navView.setNavigationItemSelectedListener(this);
+// -------------------------------------------------------------------------------------------------
     }
 
 
@@ -50,7 +68,14 @@ public class Settings extends AppCompatActivity implements NavigationView.OnNavi
 
                 // startActivity(new Intent(Settings.this, LandmarkListPage.class));
                 break;
+            case R.id.nav_Settings:
 
+                // startActivity(new Intent(Settings.this, LandmarkListPage.class));
+                break;
+            case R.id.nav_SignOut:
+
+                startActivity(new Intent(Settings.this, Register.class));
+                break;
         }
         return true;
     }

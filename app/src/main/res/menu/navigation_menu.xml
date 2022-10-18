@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-
     <item
         android:id="@+id/nav_HomePage"
         android:icon="@android:drawable/ic_menu_send"
@@ -10,13 +9,13 @@
         android:id="@+id/nav_LandmarkListPage"
         android:icon="@android:drawable/ic_menu_send"
         android:title="LandmarkListPage" />
-<!--    <item
-        android:id="@+id/nav_stats"
+    <item
+        android:id="@+id/nav_Settings"
         android:icon="@android:drawable/ic_menu_send"
-        android:title="Stats" />-->
-<!--    <item
-        android:id="@+id/nav_signOut"
+        android:title="Stats" />
+    <item
+        android:id="@+id/nav_SignOut"
         android:icon="@android:drawable/ic_menu_close_clear_cancel"
-        android:title="Sign Out" />-->
+        android:title="Sign Out" />
 
 </menu>
