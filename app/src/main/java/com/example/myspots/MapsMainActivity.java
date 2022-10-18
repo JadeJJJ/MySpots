@@ -9,12 +9,17 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -27,6 +32,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -38,14 +44,33 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.myspots.databinding.ActivityMapsMainBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
+
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.PlaceLikelihood;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceResponse;
+import com.google.android.libraries.places.api.net.PlacesClient;
 
 public class MapsMainActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -68,6 +93,13 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     private static FirebaseDatabase database = FirebaseDatabase.getInstance();
     private DatabaseReference landMarkRef = database.getReference("Landmarks");
     private List<Landmarks> landmarksList = new ArrayList<>();
+    //Getting the granular landmarks here
+    private PlacesClient placesClient;
+    private String[] likelyPlaceNames;
+    private String[] likelyPlaceAddresses;
+    private List[] likelyPlaceAttributions;
+    private LatLng[] likelyPlaceLatLngs;
+
 
     String userID;
     @Override
@@ -83,15 +115,19 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        // For the alert dialog box
         spnLandmarks = findViewById(R.id.spnLandmarks);
         List<String> lstLandmarks = new ArrayList<>();
         lstLandmarks.add("Historical");
         lstLandmarks.add("Modern");
         lstLandmarks.add("Popular");
-
         ArrayAdapter<String> spnAdapter = new ArrayAdapter<String>(MapsMainActivity.this, android.R.layout.simple_spinner_item, lstLandmarks);
         spnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spnLandmarks.setAdapter(spnAdapter);
+
+        //For the place adapter
+        Places.initialize(getApplicationContext(), Map_API);
+        placesClient = Places.createClient(this);
 
         btnCurrentPosition = findViewById(R.id.btnCurrentLocation);
         btnCurrentPosition.setOnClickListener(new View.OnClickListener() {
@@ -237,24 +273,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(@NonNull LatLng latLng) {
-                LinearLayout myLayout = new LinearLayout(MapsMainActivity.this);
-                myLayout.setOrientation(LinearLayout.VERTICAL);
-                EditText inputName = new EditText(MapsMainActivity.this);
-                inputName.setHint("Marker name");
-                EditText inputDes = new EditText(MapsMainActivity.this);
-                inputDes.setHint("Marker Description");
-                Spinner spnLandmarkType = new Spinner(MapsMainActivity.this);
-                List<String> lstLandmarks = new ArrayList<>();
-                lstLandmarks.add("Historical");
-                lstLandmarks.add("Modern");
-                lstLandmarks.add("Popular");
 
-                ArrayAdapter<String> spnAdapter = new ArrayAdapter<String>(MapsMainActivity.this, android.R.layout.simple_spinner_item, lstLandmarks);
-                spnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                spnLandmarkType.setAdapter(spnAdapter);
-                myLayout.addView(inputName);
-                myLayout.addView(inputDes);
-                myLayout.addView(spnLandmarkType);
                 //----------------------------------------------------------------------------------
                 //TODO Put the code for the snapping the marker here
 /*
@@ -297,9 +316,10 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-*/
+                */
 
                 //----------------------------------------------------------------------------------
+                /*
                 final AlertDialog.Builder builder = new AlertDialog.Builder(MapsMainActivity.this);
                 //Sets the message for the dialog box
                 builder.setMessage("Do you wish to add this marker?").setCancelable(true)
@@ -327,7 +347,8 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                 //Creates and shows the dialog box
                 final AlertDialog alert = builder.create();
                 alert.show();
-
+            */
+                GetClosestPlace(latLng);
             }
         });
         displayMarkers();
@@ -457,7 +478,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
 
         try {
             if (LocationPermission) {
-                Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
+                @SuppressLint("MissingPermission") Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
                 locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
                     @Override
                     public void onComplete(@NonNull Task<Location> task) {
@@ -519,6 +540,269 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         url.append("&radius=1500");
         url.append("&key=" + Map_API);
         return url.toString();
+    }
+    //TESTING CODE----------------------------------------------------------------------------------
+    // Gets the response from Http
+    public static String getResponseFromHttpUrl(URL url) throws IOException {
+        HttpURLConnection urlConnection =(HttpURLConnection) url.openConnection();
+        try
+        {
+            InputStream in  = urlConnection.getInputStream();
+            Scanner scanner = new Scanner(in);
+            scanner.useDelimiter("//A");
+            boolean hasInput = scanner.hasNext();
+            if (hasInput)
+            {
+                return scanner.next();
+            } else
+            {
+                return null;
+            }
+        } finally
+        {
+            urlConnection.disconnect();
+        }
+    }
+
+    //this is used to get the closes place to where a person has put their finger so that they can create a marker
+    public void GetClosestPlace(LatLng latLng)
+    {/*
+        Uri buildUri = Uri.parse("https://maps.googleapis.com/maps/api/place/nearbysearch/json").buildUpon()
+                .appendQueryParameter("location", latLng.latitude + "," + latLng.longitude)
+                .appendQueryParameter("radius", "1500")
+                .appendQueryParameter("key", Map_API)
+                .build();
+        // TESTER https://maps.googleapis.com/maps/api/place/nearbysearch/json?location:-33.98273266107884%2C18.459802430187832&radius=1500&key=AIzaSyCIodK972eupbLoQy_0084qjnhO20dFMJc
+        //https://maps.googleapis.com/maps/api/place/nearbysearch/json
+        //  ?keyword=cruise
+        //  &location=-33.8670522%2C151.1957362
+        //  &radius=1500
+        //  &type=restaurant
+        //  &key=YOUR_API_KEY
+        URL urlNearby = null;
+        try {
+            urlNearby = new URL(buildUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        new FetchLandmarkData().execute(urlNearby); */
+//FROM GOOGLE---------------------------------------------------------------------------------------
+
+            // Use fields to define the data types to return.
+            List<Place.Field> placeFields = Arrays.asList(Place.Field.NAME, Place.Field.ADDRESS,
+                    Place.Field.LAT_LNG);
+
+            // Use the builder to create a FindCurrentPlaceRequest.
+            FindCurrentPlaceRequest request =
+                    FindCurrentPlaceRequest.newInstance(placeFields);
+
+            // Get the likely places - that is, the businesses and other points of interest that
+            // are the best match for the device's current location.
+            @SuppressWarnings("MissingPermission") final
+            Task<FindCurrentPlaceResponse> placeResult =
+                    placesClient.findCurrentPlace(request);
+            placeResult.addOnCompleteListener (new OnCompleteListener<FindCurrentPlaceResponse>() {
+                @Override
+                public void onComplete(@NonNull Task<FindCurrentPlaceResponse> task) {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        FindCurrentPlaceResponse likelyPlaces = task.getResult();
+
+                        // Set the count, handling cases where less than 5 entries are returned.
+                        int count;
+                        if (likelyPlaces.getPlaceLikelihoods().size() < 5) {
+                            count = likelyPlaces.getPlaceLikelihoods().size();
+                        } else {
+                            count = 5;
+                        }
+
+                        int i = 0;
+                        likelyPlaceNames = new String[count];
+                        likelyPlaceAddresses = new String[count];
+                        likelyPlaceAttributions = new List[count];
+                        likelyPlaceLatLngs = new LatLng[count];
+
+                        for (PlaceLikelihood placeLikelihood : likelyPlaces.getPlaceLikelihoods()) {
+                            // Build a list of likely places to show the user.
+                            likelyPlaceNames[i] = placeLikelihood.getPlace().getName();
+                            likelyPlaceAddresses[i] = placeLikelihood.getPlace().getAddress();
+                            likelyPlaceAttributions[i] = placeLikelihood.getPlace()
+                                    .getAttributions();
+                            likelyPlaceLatLngs[i] = placeLikelihood.getPlace().getLatLng();
+
+                            i++;
+                            if (i > (count - 1)) {
+                                break;
+                            }
+                        }
+
+                        // Show a dialog offering the user the list of likely places, and add a
+                        // marker at the selected place.
+                        MapsMainActivity.this.openPlacesDialog();
+                    }
+                    else {
+                        Log.e(TAG, "Exception: %s", task.getException());
+                    }
+                }
+            });
+
+/* OLD CODE
+        try {
+
+            //Building URL
+            urlNearby = URLEncoder.encode(getNearbyPlace(), "UTF-8");
+            URL url = new URL(urlNearby);
+            // read from the URL
+            Scanner scan = new Scanner(url.openStream());
+            String str = new String();
+            while (scan.hasNext())
+                str += scan.nextLine();
+            scan.close();
+            // build a JSON object
+            JSONObject obj = new JSONObject(str);
+            if (! obj.getString("status").equals("OK"))
+                return;
+
+            // get the first result
+            JSONObject res = obj.getJSONArray("results").getJSONObject(0);
+            //get the attributes
+            Address = res.getString("formatted_address");
+            locName = res.getString("name");
+            //Get the position object
+            JSONObject loc =
+                    res.getJSONObject("geometry").getJSONObject("location");
+            Lat = loc.getDouble("lat");
+            Lng = loc.getDouble("lng");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+*/
+    }
+
+    /*** Asynchronous task that requests weather data.*/
+    class FetchLandmarkData extends AsyncTask<URL, Void, String> {
+        @Override
+        protected String doInBackground(URL... urls) {
+            URL LocationURL = urls[0];
+            String locationData = null;
+            try {
+                locationData = getResponseFromHttpUrl(LocationURL);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return locationData;
+        }
+
+        @Override
+        protected void onPostExecute(String locationData) {
+            if (locationData != null) {
+                //Output Location data here
+                //tvWeather.setText(locationData);
+                ConsumeJSON(locationData);
+            }
+            super.onPostExecute(locationData);
+        }
+
+        // converts the given raw JSON Data and coverts it
+        protected void ConsumeJSON(String locationData)
+        {
+            //Setting up the layout of the alert
+            LinearLayout myLayout = new LinearLayout(MapsMainActivity.this);
+            myLayout.setOrientation(LinearLayout.VERTICAL);
+            //EditText inputName = new EditText(MapsMainActivity.this);
+            //inputName.setHint("Marker name");
+            //EditText inputDes = new EditText(MapsMainActivity.this);
+            //inputDes.setHint("Marker Description");
+            Spinner spnLandmarkType = new Spinner(MapsMainActivity.this);
+            List<String> lstLandmarks = new ArrayList<>();
+            lstLandmarks.add("Historical");
+            lstLandmarks.add("Modern");
+            lstLandmarks.add("Popular");
+
+            ArrayAdapter<String> spnAdapter = new ArrayAdapter<String>(MapsMainActivity.this, android.R.layout.simple_spinner_item, lstLandmarks);
+            spnAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spnLandmarkType.setAdapter(spnAdapter);
+            //myLayout.addView(inputName);
+            //myLayout.addView(inputDes);
+            myLayout.addView(spnLandmarkType);
+
+            if (locationData!=null)
+            {
+                try {
+                    JSONObject rawJSON = new JSONObject(locationData);
+                    JSONObject closeLocation = rawJSON.getJSONArray("results").getJSONObject(0);
+                    //get the attributes
+                    String locName = closeLocation.getString("name");
+                    String Address = closeLocation.getString("place_id");
+                    //Get the position object
+                    JSONObject loc =
+                            closeLocation.getJSONObject("geometry").getJSONObject("location");
+                    Double Lat = loc.getDouble("lat");
+                    Double Lng = loc.getDouble("lng");
+                    //output = new Landmarks(MainActivity.UserID, locName, Address, Lat, Lng, "SET THIS IN THE DIALOG BOX");
+
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(MapsMainActivity.this);
+                    //Sets the message for the dialog box
+                    builder.setMessage("Do you wish to add a marker at "+locName+"?").setCancelable(true)
+                            .setView(myLayout)
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                    String selectedType = spnLandmarkType.getSelectedItem().toString();
+                                    // This is where it will be stored in the database. We have the position(latlng)
+                                    Landmarks newLandmark = new Landmarks(MainActivity.UserID, locName,Address,Lat,Lng, selectedType);
+                                    db.PostLandmark(newLandmark); // posting to db
+                                    mMap.addMarker(new MarkerOptions().position(new LatLng(Lat,Lng)).title(locName).snippet(Address)); //creating marker on map
+                                    endPos = new LatLng(Lat,Lng);
+                                }
+                            })
+                            //Negative button
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                    //Cancels the dialog box
+                                    dialog.cancel();
+                                }
+                            });
+                    //Creates and shows the dialog box
+                    final AlertDialog alert = builder.create();
+                    alert.show();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+//FROM GOOGLE PLACES DIALOG
+    private void openPlacesDialog() {
+        // Ask the user to choose the place where they are now.
+        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // The "which" argument contains the position of the selected item.
+                LatLng markerLatLng = likelyPlaceLatLngs[which];
+                String markerSnippet = likelyPlaceAddresses[which];
+                if (likelyPlaceAttributions[which] != null) {
+                    markerSnippet = markerSnippet + "\n" + likelyPlaceAttributions[which];
+                }
+
+                // Add a marker for the selected place, with an info window
+                // showing information about that place.
+                mMap.addMarker(new MarkerOptions()
+                        .title(likelyPlaceNames[which])
+                        .position(markerLatLng)
+                        .snippet(markerSnippet));
+
+                // Position the map's camera at the location of the marker.
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markerLatLng,
+                        15));
+            }
+        };
+
+        // Display the dialog.
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Please pick a place")
+                .setItems(likelyPlaceNames, listener)
+                .show();
     }
 
 }

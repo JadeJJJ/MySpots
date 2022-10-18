@@ -137,7 +137,7 @@ public class LocationGetterUtil {
 
         // converts the given raw JSON Data and coverts it
         protected void ConsumeJSON(String locationData)
-        {
+        { /*
             if (locationData!=null)
             {
                 try {
@@ -180,7 +180,7 @@ public class LocationGetterUtil {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-            }
+            } */
         }
     }
 
