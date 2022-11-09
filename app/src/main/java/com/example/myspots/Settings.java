@@ -62,19 +62,19 @@ public class Settings extends AppCompatActivity implements NavigationView.OnNavi
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch(item.getItemId()){
             case R.id.nav_HomePage:
-                // startActivity(new Intent(Settings.this, HomePage.class));
+                 startActivity(new Intent(Settings.this, HomePage.class));
                 break;
             case R.id.nav_LandmarkListPage:
 
-                // startActivity(new Intent(Settings.this, LandmarkListPage.class));
+                 startActivity(new Intent(Settings.this, LandmarkListPage.class));
                 break;
             case R.id.nav_Settings:
 
-                // startActivity(new Intent(Settings.this, LandmarkListPage.class));
+                 startActivity(new Intent(Settings.this, Settings.class));
                 break;
             case R.id.nav_SignOut:
 
-                startActivity(new Intent(Settings.this, Register.class));
+                startActivity(new Intent(Settings.this, MainActivity.class));
                 break;
         }
         return true;

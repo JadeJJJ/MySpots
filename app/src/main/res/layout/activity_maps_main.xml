@@ -59,4 +59,10 @@
         android:layout_marginBottom="10dp"
         android:text="Directions" />
 
+    <Button
+        android:id="@+id/btnTestGoogleCode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Button" />
+
 </RelativeLayout>
