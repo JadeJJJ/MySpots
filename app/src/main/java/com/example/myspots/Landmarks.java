@@ -3,21 +3,21 @@ package com.example.myspots;
 import com.google.android.gms.maps.model.LatLng;
 
 public class Landmarks {
+    private String placeId;
     private String userId;
     private String landMarkName;
     private String landMarkAddress;
     private Double Latitude;
     private Double longitude;
 
-
-
     private String landmarkType;
 
-    public Landmarks(String userId, String landMarkName, String landMarkAddress, Double latitude, Double longitude, String landmarkType) {
+    public Landmarks(String placeId, String userId, String landMarkName, String landMarkAddress, Double latitude, Double longitude, String landmarkType) {
+        this.placeId = placeId;
         this.userId = userId;
         this.landMarkName = landMarkName;
         this.landMarkAddress = landMarkAddress;
-        this.Latitude = latitude;
+        Latitude = latitude;
         this.longitude = longitude;
         this.landmarkType = landmarkType;
     }
@@ -70,5 +70,13 @@ public class Landmarks {
 
     public void setLongitude(Double longitude) {
         this.longitude = longitude;
+    }
+
+    public String getPlaceId() {
+        return placeId;
+    }
+
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
     }
 }
