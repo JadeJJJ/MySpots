@@ -103,6 +103,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     private String[] likelyPlaceAddresses;
     private List[] likelyPlaceAttributions;
     private LatLng[] likelyPlaceLatLngs;
+    private String[] likelyPlaceIDs;
     //Settings
     private String unitType;
     private String sLandmarkType;
@@ -458,8 +459,9 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 String selectedType = spnLandmarkType.getSelectedItem().toString();
                                 String description = edtDescription.getText().toString();
                                 LatLng poiLL = poi.latLng;
+                                String placeID = poi.placeId; // just in case
                                 // This is where it will be stored in the database. We have the position(latlng)
-                                Landmarks newLandmark = new Landmarks(MainActivity.UserID, poi.name,description,poiLL.latitude,poiLL.longitude, selectedType);
+                                Landmarks newLandmark = new Landmarks(placeID, MainActivity.UserID, poi.name,description,poiLL.latitude,poiLL.longitude, selectedType);
                                 db.PostLandmark(newLandmark); // posting to db
                                 Marker poiMarker = mMap.addMarker(new MarkerOptions()
                                         .position(poiLL)
@@ -809,6 +811,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                     likelyPlaceAddresses = new String[count];
                     likelyPlaceAttributions = new List[count];
                     likelyPlaceLatLngs = new LatLng[count];
+                    likelyPlaceIDs = new String[count];
 
                     for (PlaceLikelihood placeLikelihood : likelyPlaces.getPlaceLikelihoods()) {
                         // Build a list of likely places to show the user.
@@ -817,6 +820,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                         likelyPlaceAttributions[i] = placeLikelihood.getPlace()
                                 .getAttributions();
                         likelyPlaceLatLngs[i] = placeLikelihood.getPlace().getLatLng();
+                        likelyPlaceIDs[i] = placeLikelihood.getPlace().getId();
 
                         i++;
                         if (i > (count - 1)) {
@@ -921,7 +925,8 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                     JSONObject closeLocation = rawJSON.getJSONArray("results").getJSONObject(0);
                     //get the attributes
                     String locName = closeLocation.getString("name");
-                    String Address = closeLocation.getString("place_id");
+                    String placeId = closeLocation.getString("place_id");
+                    String Address = closeLocation.getString("formatted_address");
                     //Get the position object
                     JSONObject loc =
                             closeLocation.getJSONObject("geometry").getJSONObject("location");
@@ -937,7 +942,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
                                     String selectedType = spnLandmarkType.getSelectedItem().toString();
                                     // This is where it will be stored in the database. We have the position(latlng)
-                                    Landmarks newLandmark = new Landmarks(MainActivity.UserID, locName,Address,Lat,Lng, selectedType);
+                                    Landmarks newLandmark = new Landmarks(placeId,MainActivity.UserID, locName,Address,Lat,Lng, selectedType);
                                     db.PostLandmark(newLandmark); // posting to db
                                     mMap.addMarker(new MarkerOptions().position(new LatLng(Lat,Lng)).title(locName).snippet(Address)); //creating marker on map
                                     endPos = new LatLng(Lat,Lng);
@@ -1051,7 +1056,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                         .title(likelyPlaceNames[which])
                         .position(markerLatLng)
                         .snippet(markerSnippet));
-                Landmarks loc = new Landmarks(MainActivity.UserID, likelyPlaceNames[which], markerSnippet,markerLatLng.latitude,markerLatLng.longitude,selectedType);
+                Landmarks loc = new Landmarks(likelyPlaceIDs[which], MainActivity.UserID, likelyPlaceNames[which], markerSnippet, markerLatLng.latitude, markerLatLng.longitude, selectedType);
                 db.PostLandmark(loc);
                 // Position the map's camera at the location of the marker.
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markerLatLng,
