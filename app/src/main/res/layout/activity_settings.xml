@@ -47,13 +47,13 @@
             android:textColor="#F3EFEF" />
 
         <RadioButton
-            android:id="@+id/radioButton4"
+            android:id="@+id/rdbKilo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Kilometres" />
 
         <RadioButton
-            android:id="@+id/radioButton5"
+            android:id="@+id/rdbMiles"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:text="Miles" />
@@ -88,11 +88,17 @@
             android:textColor="#F8F2F2" />
 
         <Spinner
-            android:id="@+id/spinner"
+            android:id="@+id/spnLandmarkTypeSettings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:contentDescription="@string/app_name"
             android:minHeight="48dp" />
+
+        <Button
+            android:id="@+id/btnSaveSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Setting" />
 
     </LinearLayout>
 

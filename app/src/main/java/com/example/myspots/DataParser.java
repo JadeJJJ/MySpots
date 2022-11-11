@@ -10,59 +10,59 @@ import java.util.HashMap;
 public class DataParser {
     private HashMap<String,String> getDuration(JSONArray googleDirectionsJson)
     {
-        HashMap<String, String> googleDirectionsMap = new HashMap<>();
+        HashMap<String, String> myDirectionsMap = new HashMap<>();
         String duration = "";
         String distance = "";
         try
         {
             duration = googleDirectionsJson.getJSONObject(0).getJSONObject("duration").getString("text");
             distance = googleDirectionsJson.getJSONObject(0).getJSONObject("distance").getString("text");
-            googleDirectionsMap.put("duration", duration);
-            googleDirectionsMap.put("distance", distance);
+            myDirectionsMap.put("duration", duration);
+            myDirectionsMap.put("distance", distance);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return googleDirectionsMap;
+        return myDirectionsMap;
     }
     public String[] parseDirections(String jsonData)
     {
-        JSONArray jsonArray = null;
-        JSONObject jsonObject;
+        JSONArray myJsonArray = null;
+        JSONObject myJsonObject;
 
         try
         {
-            jsonObject = new JSONObject(jsonData);
-            jsonArray = jsonObject.getJSONArray("routes").getJSONObject(0).getJSONArray("legs").getJSONObject(0).getJSONArray("steps");
+            myJsonObject = new JSONObject(jsonData);
+            myJsonArray = myJsonObject.getJSONArray("routes").getJSONObject(0).getJSONArray("legs").getJSONObject(0).getJSONArray("steps");
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return getPaths(jsonArray);
+        return getPaths(myJsonArray);
     }
 
-    public String[] getPaths(JSONArray googleStepsJson)
+    public String[] getPaths(JSONArray myJsonSteps)
     {
-        int count = googleStepsJson.length();
-        String[] polylines = new String[count];
+        int count = myJsonSteps.length();
+        String[] myPolylines = new String[count];
 
         for (int i = 0; i < count; i++)
         {
             try {
-                polylines[i] = getPath(googleStepsJson.getJSONObject(i));
+                myPolylines[i] = getPath(myJsonSteps.getJSONObject(i));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-        return polylines;
+        return myPolylines;
     }
 
-    public String getPath(JSONObject googlePathJson)
+    public String getPath(JSONObject myJsonPath)
     {
-        String polyline = "";
+        String myPolyline = "";
         try {
-            polyline = googlePathJson.getJSONObject("polyline").getString("points");
+            myPolyline = myJsonPath.getJSONObject("polyline").getString("points");
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return polyline;
+        return myPolyline;
     }
 }
