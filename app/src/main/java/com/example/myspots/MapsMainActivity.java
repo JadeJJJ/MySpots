@@ -25,6 +25,7 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.Response;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -44,6 +45,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,6 +75,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     private static FirebaseDatabase database = FirebaseDatabase.getInstance();
     private DatabaseReference landMarkRef = database.getReference("Landmarks");
     private List<Landmarks> landmarksList = new ArrayList<>();
+
 
     String userID;
     @Override
@@ -521,4 +529,57 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         return url.toString();
     }
 
+    //Reference:https://mobikul.com/get-distance-duration-two-locations-android/
+    private void driveMode()
+    {
+        // Origin of route
+        String str_origin = "origin=" + startPos.latitude + "," + startPos.longitude;
+
+        // Destination of route
+        String str_dest = "destination=" + endPos.latitude + "," + endPos.longitude;
+        OkHttpClient client = new OkHttpClient().newBuilder().build();
+        MediaType mediaType = MediaType.parse("text/plain");
+        RequestBody body = RequestBody.create(mediaType, "");
+        Request request = new Request.Builder()
+                .url("https://maps.googleapis.com/maps/api/directions/json?origin=Toledo&destination=Madrid&region=es&key=YOUR_API_KEY")
+                .method("GET", body)
+                .build();
+        Response response = client.newCall(request).execute();
+
+    }
+
+    private String urlDownloader(String myURL)
+    {
+        String myData = "";
+        InputStream inputStream = null;
+        HttpURLConnection myURLConn = null;
+
+        try {
+            URL theURL = new URL(myURL);
+            myURLConn = (HttpURLConnection) theURL.openConnection();
+            myURLConn.connect();
+            inputStream = myURLConn.getInputStream();
+            BufferedReader myBR = new BufferedReader(new InputStreamReader(inputStream));
+            StringBuffer mySB = new StringBuffer();
+
+            String sLine = "";
+            while ((sLine = myBR.readLine()) != null)
+            {
+                mySB.append(sLine);
+            }
+            myData = mySB.toString();
+            myBR.close();
+        } catch (Exception ex)
+        {
+            Log.d("URL DOWNLOAD ERROR:", ex.toString());
+        }finally {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            myURLConn.disconnect();
+        }
+        return myData;
+    }
 }
