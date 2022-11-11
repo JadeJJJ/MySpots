@@ -9,6 +9,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
@@ -29,6 +30,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -53,6 +55,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -100,6 +103,13 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     private String[] likelyPlaceAddresses;
     private List[] likelyPlaceAttributions;
     private LatLng[] likelyPlaceLatLngs;
+    //Settings
+    private String unitType;
+    private String sLandmarkType;
+    private boolean flagLandmarks;
+    String mapMode = null;
+    private DatabaseReference settingsRef = database.getReference("Settings");
+    private Button btnSettings;
 
 
     String userID;
@@ -107,6 +117,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         userID = getIntent().getStringExtra("userID");
+        mapMode = getIntent().getStringExtra("mapMode");
         binding = ActivityMapsMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -179,8 +190,24 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                 myObject[0] = mMap;
                 myObject[1] = url;
                 getDirectionsData.execute(myObject);
+
+                Uri buildUri = Uri.parse("https://maps.googleapis.com/maps/api/distancematrix/json").buildUpon()
+                        .appendQueryParameter("origin",startPos.latitude + "%2C" + startPos.longitude)
+                        .appendQueryParameter("destination", endPos.latitude + "%2C" + endPos.longitude)
+                        .appendQueryParameter("key", Map_API)
+                        .build();
+
+                URL urlNearby = null;
+                try {
+                    urlNearby = new URL(buildUri.toString());
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+                new FetchDistanceData().execute(urlNearby);
+
             }
         });
+
         btnFind = findViewById(R.id.btnFindLocation);
         btnFind.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -244,6 +271,39 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
             }
         });
 
+        settingsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot pulledData : snapshot.getChildren())
+                {
+                    SettingsClass mySettings = pulledData.getValue(SettingsClass.class);
+                    if (mySettings.getUserID().equals(userID))
+                    {
+                        mapMode = mySettings.getMapMode();
+                        unitType = mySettings.getUnitType();
+                        sLandmarkType = mySettings.getLandmarkType();
+                        if(mapMode.equals("Night")){
+                            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(MapsMainActivity.this,R.raw.night_mode_json));
+                        }else{
+                            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(MapsMainActivity.this,R.raw.day_mode_json));
+                        }
+                        flagLandmarks = true;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        btnSettings = findViewById(R.id.btnSettings);
+        btnSettings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MapsMainActivity.this, Settings.class));
+            }
+        });
     }
 
 
@@ -261,6 +321,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        //mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(MapsMainActivity.this,R.raw.day_mode_json));
         getDeviceLocation();
         updateUI();
 
@@ -383,10 +444,11 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
 
                 myLayout.addView(edtDescription);
                 myLayout.addView(spnLandmarkType);
+                /* THIS Causes the marker to be added and showing the info window is not good
                 Marker poiMarker = mMap.addMarker(new MarkerOptions()
                         .position(poi.latLng)
                         .title(poi.name));
-                poiMarker.showInfoWindow();
+                poiMarker.showInfoWindow();*/
                 final AlertDialog.Builder builder = new AlertDialog.Builder(MapsMainActivity.this);
                 //Sets the message for the dialog box
                 builder.setMessage("Do you wish to add a marker at "+poi.name+"?").setCancelable(true)
@@ -399,7 +461,12 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 // This is where it will be stored in the database. We have the position(latlng)
                                 Landmarks newLandmark = new Landmarks(MainActivity.UserID, poi.name,description,poiLL.latitude,poiLL.longitude, selectedType);
                                 db.PostLandmark(newLandmark); // posting to db
-                                mMap.addMarker(new MarkerOptions().position(poiLL).title(poi.name).snippet(description)); //creating marker on map
+                                Marker poiMarker = mMap.addMarker(new MarkerOptions()
+                                        .position(poiLL)
+                                        .title(poi.name)
+                                        .snippet(description));
+                                poiMarker.showInfoWindow();
+                                //mMap.addMarker(new MarkerOptions().position(poiLL).title(poi.name).snippet(description)); //creating marker on map
                                 endPos = poiLL;
                             }
                         })
@@ -418,14 +485,79 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     }
 
     private void displayMarkers() {
+        if ( flagLandmarks == true)
+        {
+            populateMarkersOffChoice();
+        }
+        else
+        {
+            landMarkRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for (DataSnapshot pulledData : snapshot.getChildren())
+                    {
+                        Landmarks landmark = pulledData.getValue(Landmarks.class);
+                        if (landmark.getLandmarkType().equals("Historical") && landmark.getUserId().equals(userID))
+                        {
+                            double lat = pulledData.child("latitude").getValue(Double.class);
+                            double lng = pulledData.child("longitude").getValue(Double.class);
+                            LatLng pos = new LatLng(lat,lng);
+                            String name = landmark.getLandMarkName();
+                            String address = landmark.getLandMarkAddress();
+                            mMap.addMarker(new MarkerOptions()
+                                    .position(pos)
+                                    .title(name)
+                                    .snippet(address));
+                        }
+                        if (landmark.getLandmarkType().equals("Modern") && landmark.getUserId().equals(userID))
+                        {
+                            double lat = pulledData.child("latitude").getValue(Double.class);
+                            double lng = pulledData.child("longitude").getValue(Double.class);
+                            LatLng pos = new LatLng(lat,lng);
+                            String name = landmark.getLandMarkName();
+                            String address = landmark.getLandMarkAddress();
+                            mMap.addMarker(new MarkerOptions()
+                                    .position(pos)
+                                    .title(name)
+                                    .snippet(address)
+                                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                        }
+                        if (landmark.getLandmarkType().equals("Popular") && landmark.getUserId().equals(userID))
+                        {
+                            double lat = pulledData.child("latitude").getValue(Double.class);
+                            double lng = pulledData.child("longitude").getValue(Double.class);
+                            LatLng pos = new LatLng(lat,lng);
+                            String name = landmark.getLandMarkName();
+                            String address = landmark.getLandMarkAddress();
+                            mMap.addMarker(new MarkerOptions()
+                                    .position(pos)
+                                    .title(name)
+                                    .snippet(address)
+                                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                        }
+                    }
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }
+
+
+    }
+
+    private void populateMarkersOffChoice()
+    {
         landMarkRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot pulledData : snapshot.getChildren())
                 {
                     Landmarks landmark = pulledData.getValue(Landmarks.class);
-                    if (landmark.getLandmarkType().equals("Historical") && landmark.getUserId().equals(userID))
+                    if (landmark.getLandmarkType().equals("Historical") && sLandmarkType.equals("Historical") && landmark.getUserId().equals(userID))
                     {
+
                         double lat = pulledData.child("latitude").getValue(Double.class);
                         double lng = pulledData.child("longitude").getValue(Double.class);
                         LatLng pos = new LatLng(lat,lng);
@@ -436,7 +568,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 .title(name)
                                 .snippet(address));
                     }
-                    if (landmark.getLandmarkType().equals("Modern") && landmark.getUserId().equals(userID))
+                    else if (landmark.getLandmarkType().equals("Modern") && sLandmarkType.equals("Modern") && landmark.getUserId().equals(userID))
                     {
                         double lat = pulledData.child("latitude").getValue(Double.class);
                         double lng = pulledData.child("longitude").getValue(Double.class);
@@ -449,7 +581,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 .snippet(address)
                                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
                     }
-                    if (landmark.getLandmarkType().equals("Popular") && landmark.getUserId().equals(userID))
+                    else if (landmark.getLandmarkType().equals("Popular") && sLandmarkType.equals("Popular") && landmark.getUserId().equals(userID))
                     {
                         double lat = pulledData.child("latitude").getValue(Double.class);
                         double lng = pulledData.child("longitude").getValue(Double.class);
@@ -464,12 +596,12 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                     }
                 }
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
 
             }
         });
-
     }
 
     private void getLocationPermission() {
@@ -503,7 +635,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     }
 
     //--------------------------------------------------------------------------------------------//
-    //
+    // TODO On this update UI function maybe re-add the markers? IE Call Display markers
     private void updateUI() {
         if (mMap == null) {
             return;
@@ -622,7 +754,8 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
 
     //this is used to get the closes place to where a person has put their finger so that they can create a marker
     public void GetClosestPlace(LatLng latLng)
-    {/*
+    {
+        /*
         Uri buildUri = Uri.parse("https://maps.googleapis.com/maps/api/place/nearbysearch/json").buildUpon()
                 .appendQueryParameter("location", latLng.latitude + "," + latLng.longitude)
                 .appendQueryParameter("radius", "1500")
@@ -644,64 +777,61 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
 
         new FetchLandmarkData().execute(urlNearby); */
 //FROM GOOGLE---------------------------------------------------------------------------------------
+        // Use fields to define the data types to return.
+        List<Place.Field> placeFields = Arrays.asList(Place.Field.NAME, Place.Field.ADDRESS,
+                Place.Field.LAT_LNG);
 
-            // Use fields to define the data types to return.
-            List<Place.Field> placeFields = Arrays.asList(Place.Field.NAME, Place.Field.ADDRESS,
-                    Place.Field.LAT_LNG);
-
-            // Use the builder to create a FindCurrentPlaceRequest.
-            FindCurrentPlaceRequest request =
-                    FindCurrentPlaceRequest.newInstance(placeFields);
+        // Use the builder to create a FindCurrentPlaceRequest.
+        FindCurrentPlaceRequest request =
+                FindCurrentPlaceRequest.newInstance(placeFields);
 
 
-            // Get the likely places - that is, the businesses and other points of interest that
-            // are the best match for the device's current location.
-            @SuppressWarnings("MissingPermission") final
-            Task<FindCurrentPlaceResponse> placeResult =
-                    placesClient.findCurrentPlace(request);
-            placeResult.addOnCompleteListener (new OnCompleteListener<FindCurrentPlaceResponse>() {
-                @Override
-                public void onComplete(@NonNull Task<FindCurrentPlaceResponse> task) {
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        FindCurrentPlaceResponse likelyPlaces = task.getResult();
+        // Get the likely places - that is, the businesses and other points of interest that
+        // are the best match for the device's current location.
+        @SuppressWarnings("MissingPermission") final Task<FindCurrentPlaceResponse> placeResult =
+                placesClient.findCurrentPlace(request);
+        placeResult.addOnCompleteListener(new OnCompleteListener<FindCurrentPlaceResponse>() {
+            @Override
+            public void onComplete(@NonNull Task<FindCurrentPlaceResponse> task) {
+                if (task.isSuccessful() && task.getResult() != null) {
+                    FindCurrentPlaceResponse likelyPlaces = task.getResult();
 
-                        // Set the count, handling cases where less than 5 entries are returned.
-                        int count;
-                        if (likelyPlaces.getPlaceLikelihoods().size() < 5) {
-                            count = likelyPlaces.getPlaceLikelihoods().size();
-                        } else {
-                            count = 5;
-                        }
-
-                        int i = 0;
-                        likelyPlaceNames = new String[count];
-                        likelyPlaceAddresses = new String[count];
-                        likelyPlaceAttributions = new List[count];
-                        likelyPlaceLatLngs = new LatLng[count];
-
-                        for (PlaceLikelihood placeLikelihood : likelyPlaces.getPlaceLikelihoods()) {
-                            // Build a list of likely places to show the user.
-                            likelyPlaceNames[i] = placeLikelihood.getPlace().getName();
-                            likelyPlaceAddresses[i] = placeLikelihood.getPlace().getAddress();
-                            likelyPlaceAttributions[i] = placeLikelihood.getPlace()
-                                    .getAttributions();
-                            likelyPlaceLatLngs[i] = placeLikelihood.getPlace().getLatLng();
-
-                            i++;
-                            if (i > (count - 1)) {
-                                break;
-                            }
-                        }
-
-                        // Show a dialog offering the user the list of likely places, and add a
-                        // marker at the selected place.
-                        MapsMainActivity.this.openPlacesDialog();
+                    // Set the count, handling cases where less than 5 entries are returned.
+                    int count;
+                    if (likelyPlaces.getPlaceLikelihoods().size() < 5) {
+                        count = likelyPlaces.getPlaceLikelihoods().size();
+                    } else {
+                        count = 5;
                     }
-                    else {
-                        Log.e(TAG, "Exception: %s", task.getException());
+
+                    int i = 0;
+                    likelyPlaceNames = new String[count];
+                    likelyPlaceAddresses = new String[count];
+                    likelyPlaceAttributions = new List[count];
+                    likelyPlaceLatLngs = new LatLng[count];
+
+                    for (PlaceLikelihood placeLikelihood : likelyPlaces.getPlaceLikelihoods()) {
+                        // Build a list of likely places to show the user.
+                        likelyPlaceNames[i] = placeLikelihood.getPlace().getName();
+                        likelyPlaceAddresses[i] = placeLikelihood.getPlace().getAddress();
+                        likelyPlaceAttributions[i] = placeLikelihood.getPlace()
+                                .getAttributions();
+                        likelyPlaceLatLngs[i] = placeLikelihood.getPlace().getLatLng();
+
+                        i++;
+                        if (i > (count - 1)) {
+                            break;
+                        }
                     }
+
+                    // Show a dialog offering the user the list of likely places, and add a
+                    // marker at the selected place.
+                    MapsMainActivity.this.openPlacesDialog();
+                } else {
+                    Log.e(TAG, "Exception: %s", task.getException());
                 }
-            });
+            }
+        });
 
 /* OLD CODE
         try {
@@ -830,6 +960,66 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
         }
     }
 
+    class FetchDistanceData extends AsyncTask<URL, Void, String> {
+        @Override
+        protected String doInBackground(URL... urls) {
+            URL LocationURL = urls[0];
+            String locationData = null;
+            try {
+                locationData = getResponseFromHttpUrl(LocationURL);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return locationData;
+        }
+
+        @Override
+        protected void onPostExecute(String locationData) {
+            if (locationData != null) {
+                //Output Location data here
+                //tvWeather.setText(locationData);
+                ConsumeJSON(locationData);
+            }
+            super.onPostExecute(locationData);
+        }
+
+        // converts the given raw JSON Data and coverts it
+        protected void ConsumeJSON(String locationData)
+        {
+            //Setting up the layout of the alert
+            LinearLayout myLayout = new LinearLayout(MapsMainActivity.this);
+            myLayout.setOrientation(LinearLayout.VERTICAL);
+
+            TextView tvDistance = new TextView(MapsMainActivity.this);
+            TextView tvTimeTakes = new TextView(MapsMainActivity.this);
+
+            myLayout.addView(tvDistance);
+            myLayout.addView(tvTimeTakes);
+
+            if (locationData!=null)
+            {
+                try {
+                    JSONObject rawJSON = new JSONObject(locationData);
+
+                    JSONObject elements = rawJSON.getJSONArray("rows").getJSONArray(0).getJSONObject(0);
+                    //get the attributes
+                    JSONObject distence = elements.getJSONObject("distance");
+                    JSONObject duration = elements.getJSONObject("duration");
+                    String disText = distence.getString("text");
+                    String durText = duration.getString("text");
+
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(MapsMainActivity.this);
+                    //Sets the message for the dialog box
+                    builder.setMessage("Distance Until Location: " + disText+"\nDuration Until Location: " + durText);
+                    //Creates and shows the dialog box
+                    final AlertDialog alert = builder.create();
+                    alert.show();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 //FROM GOOGLE PLACES DIALOG-------------------------------------------------------------------------
     private void openPlacesDialog() {
         // Ask the user to choose the place where they are now.
