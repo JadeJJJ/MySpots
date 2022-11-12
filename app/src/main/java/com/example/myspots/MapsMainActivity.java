@@ -464,7 +464,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 dialog.cancel();
                                 db.DeleteLandmark(marker.getTitle());
                                 marker.remove();
-                                //TODO add the delete from database
+
                             }
                         });
                 //Creates and shows the dialog box
