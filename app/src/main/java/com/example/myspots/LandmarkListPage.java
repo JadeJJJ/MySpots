@@ -12,13 +12,29 @@ import android.content.Intent;
 
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.GridView;
+import android.widget.Spinner;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApi;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.internal.ConnectionCallbacks;
 import com.google.android.gms.common.api.internal.OnConnectionFailedListener;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class LandmarkListPage extends AppCompatActivity implements
         ConnectionCallbacks,
@@ -40,11 +56,37 @@ public class LandmarkListPage extends AppCompatActivity implements
     private RecyclerView mRecyclerView;
     private boolean mIsEnabled;
     private GoogleApiClient mClient;
+    private static FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private DatabaseReference landMarkRef = database.getReference("Landmarks");
+    private GridView gridLandmark;
+    private ArrayList<Landmarks> myArrayList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landmark_list_page);
+        mRecyclerView = findViewById(R.id.rv_SavedPlaces);
+
+        gridLandmark = findViewById(R.id.gvLocationList);
+        landMarkRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot pulledData : snapshot.getChildren())
+                {
+                    Landmarks landmark = pulledData.getValue(Landmarks.class);
+                    myArrayList.add(landmark);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        MyAdapter myAdapter = new MyAdapter(LandmarkListPage.this, myArrayList);
+        gridLandmark.setAdapter(myAdapter);
+
+
     }
 
     @Override

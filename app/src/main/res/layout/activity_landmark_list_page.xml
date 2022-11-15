@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     >
+
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        >
+        android:layout_height="match_parent">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="24dp"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
-            android:orientation="vertical"
-            >
+            android:layout_marginBottom="24dp"
+            android:orientation="vertical">
 
             <Button
                 android:id="@+id/btnAddNewLocation"
@@ -33,18 +34,24 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:text="@string/locations"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                ></TextView>
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"></TextView>
+
             <View
                 android:layout_width="fill_parent"
                 android:layout_height="2dip"
-                android:layout_marginTop="4dp"
-                ></View>
+                android:layout_marginTop="4dp"></View>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_SavedPlaces"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"></androidx.recyclerview.widget.RecyclerView>
+                android:layout_height="wrap_content"
+                android:scrollbars="vertical"
+                tools:listitem="@layout/landmark_list_item"></androidx.recyclerview.widget.RecyclerView>
+
+            <GridView
+                android:id="@+id/gvLocationList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
         </LinearLayout>
     </RelativeLayout>
