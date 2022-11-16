@@ -28,49 +28,109 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Email or Username"
+        android:padding="10dp"
         app:startIconDrawable="@drawable/ic_baseline_person_24">
 
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/logEmail"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="60dp"
+            android:padding="16dp" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/txtFirstname"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Firstname"
+        android:padding="10dp"
+        app:startIconDrawable="@drawable/ic_baseline_person_24">
+
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/logFirstname"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:padding="16dp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/txtSurname"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Surname"
+        android:padding="10dp"
+        app:startIconDrawable="@drawable/ic_baseline_person_24">
+
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/logSurname"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:padding="16dp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/txtPassword"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Password"
-        app:startIconDrawable="@drawable/ic_baseline_lock_24"
+        android:padding="10dp"
         app:endIconMode="password_toggle"
-        >
+        app:startIconDrawable="@drawable/ic_baseline_lock_24">
 
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/logPassword"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textPassword" />
+            android:layout_height="60dp"
+            android:inputType="textPassword"
+            android:padding="16dp" />
 
-        <Button
-            android:id="@+id/RegisterBTN"
-            android:layout_width="130dp"
-            android:layout_height="73dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="1"
-            android:text="Register" />
 
-        <TextView
-            android:id="@+id/LoginText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="1"
-            android:text="Login"
-            android:textSize="20sp" />
     </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/txtConfirmPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Confirm Password"
+        android:padding="10dp"
+        app:endIconMode="password_toggle"
+        app:startIconDrawable="@drawable/ic_baseline_lock_24">
+
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/logConfirmPassword"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:inputType="textPassword"
+            android:padding="16dp" />
+
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/btnRegister"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Register" />
+
+    <TextView
+        android:id="@+id/txtLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:clickable="true"
+        android:minHeight="48dp"
+        android:text="Login"
+        android:textAlignment="center"
+        android:textSize="20sp" />
 
 </LinearLayout>
