@@ -17,11 +17,15 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class Register extends AppCompatActivity {
-    EditText eEmail;
-    EditText ePassword;
-    TextView Login_BTN;
-    Button Register_BTN;
-    FirebaseAuth mAuth;
+    private EditText eEmail;
+    private EditText ePassword;
+    private TextView Login_BTN;
+    private Button Register_BTN;
+    private FirebaseAuth mAuth;
+
+    private EditText eFirstname;
+    private EditText eSurname;
+    private EditText eConfirmPassword;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,8 +33,11 @@ public class Register extends AppCompatActivity {
 
         eEmail = findViewById(R.id.logEmail);
         ePassword = findViewById(R.id.logPassword);
-        Login_BTN = findViewById(R.id.LoginText);
-        Register_BTN = findViewById(R.id.RegisterBTN);
+        Login_BTN = findViewById(R.id.txtLogin);
+        Register_BTN = findViewById(R.id.btnRegister);
+        eFirstname = findViewById(R.id.logFirstname);
+        eSurname = findViewById(R.id.logSurname);
+        eConfirmPassword = findViewById(R.id.logConfirmPassword);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -45,6 +52,9 @@ public class Register extends AppCompatActivity {
     private void registerUser() {
         String email = eEmail.getText().toString().trim();
         String password = ePassword.getText().toString().trim();
+        String firstname = eFirstname.getText().toString().trim();
+        String surname = eSurname.getText().toString().trim();
+        String conPass = eConfirmPassword.getText().toString().trim();
         InputValidation iv = new InputValidation();
 
         if(TextUtils.isEmpty(email)){
@@ -63,18 +73,25 @@ public class Register extends AppCompatActivity {
         } else
         {
 
-
-            mAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
-                    if(task.isSuccessful()){
-                        Toast.makeText(Register.this,"You have Been Registered!!!",Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(Register.this, MainActivity.class));
-                    }else{
-                        Toast.makeText(Register.this,"You have Not Been Registered!!!"+ task.getException().getMessage() ,Toast.LENGTH_SHORT).show();
+            if(password.equals(conPass))
+            {
+                mAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if(task.isSuccessful()){
+                            Toast.makeText(Register.this,"You have Been Registered!!!",Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(Register.this, MainActivity.class));
+                        }else{
+                            Toast.makeText(Register.this,"You have Not Been Registered!!!"+ task.getException().getMessage() ,Toast.LENGTH_SHORT).show();
+                        }
                     }
-                }
-            });
+                });
+            }
+            else
+            {
+                Toast.makeText(Register.this, "Passwords do not match!", Toast.LENGTH_SHORT).show();
+            }
+
         }
 
     }

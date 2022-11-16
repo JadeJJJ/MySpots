@@ -419,6 +419,58 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
             @Override
             public boolean onMarkerClick(@NonNull Marker marker) {
                 endPos = new LatLng(marker.getPosition().latitude, marker.getPosition().longitude);
+
+                //Setting up the layout of the alert
+                LinearLayout myLayout = new LinearLayout(MapsMainActivity.this);
+                myLayout.setOrientation(LinearLayout.HORIZONTAL);
+
+                final AlertDialog.Builder builder = new AlertDialog.Builder(MapsMainActivity.this);
+                //Sets the message for the dialog box
+                builder.setMessage(marker.getTitle() + "\n\n" +marker.getSnippet()).setCancelable(true)
+                        .setView(myLayout)
+                        .setPositiveButton("Directions", new DialogInterface.OnClickListener() {
+                            public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                mMap.clear();
+                                mMap.addMarker(new MarkerOptions().position(marker.getPosition()).title(marker.getTitle()).snippet(marker.getSnippet()));
+                                //displayMarkers();
+                                Object[] myObject = new Object[2];
+                                String url = getDirectionsUrl();
+                                GetDirectionsData getDirectionsData = new GetDirectionsData();
+                                myObject[0] = mMap;
+                                myObject[1] = url;
+                                getDirectionsData.execute(myObject);
+
+                                Uri buildUri = Uri.parse("https://maps.googleapis.com/maps/api/distancematrix/json").buildUpon()
+                                        .appendQueryParameter("origin",startPos.latitude + "%2C" + startPos.longitude)
+                                        .appendQueryParameter("destination", endPos.latitude + "%2C" + endPos.longitude)
+                                        .appendQueryParameter("key", Map_API)
+                                        .build();
+
+                                URL urlNearby = null;
+                                try {
+                                    urlNearby = new URL(buildUri.toString());
+                                } catch (MalformedURLException e) {
+                                    e.printStackTrace();
+                                }
+                                new FetchDistanceData().execute(urlNearby);
+                                dialog.cancel();
+                            }
+
+                        })
+                        //Negative button
+                        .setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+                            public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                //Cancels the dialog box
+                                dialog.cancel();
+                                db.DeleteLandmark(marker.getTitle());
+                                marker.remove();
+
+                            }
+                        });
+                //Creates and shows the dialog box
+                final AlertDialog alert = builder.create();
+                alert.show();
+
                 return false;
             }
         });
