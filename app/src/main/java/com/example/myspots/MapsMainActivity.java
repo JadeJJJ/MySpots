@@ -92,7 +92,6 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
     private DatabaseHandler db;
     private LatLng startPos;
     private LatLng endPos;
-    private Button btnDirections;
     private Button btnFind;
     //handling landmarks from the database
     private static FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -177,36 +176,6 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                 //Creates and shows the dialog box
                 final AlertDialog alert = builder.create();
                 alert.show();
-            }
-        });
-
-        btnDirections = findViewById(R.id.btnDirections);
-        btnDirections.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mMap.clear();
-                displayMarkers();
-                Object[] myObject = new Object[2];
-                String url = getDirectionsUrl();
-                GetDirectionsData getDirectionsData = new GetDirectionsData();
-                myObject[0] = mMap;
-                myObject[1] = url;
-                getDirectionsData.execute(myObject);
-
-                Uri buildUri = Uri.parse("https://maps.googleapis.com/maps/api/distancematrix/json").buildUpon()
-                        .appendQueryParameter("origin",startPos.latitude + "%2C" + startPos.longitude)
-                        .appendQueryParameter("destination", endPos.latitude + "%2C" + endPos.longitude)
-                        .appendQueryParameter("key", Map_API)
-                        .build();
-
-                URL urlNearby = null;
-                try {
-                    urlNearby = new URL(buildUri.toString());
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
-                new FetchDistanceData().execute(urlNearby);
-
             }
         });
 
