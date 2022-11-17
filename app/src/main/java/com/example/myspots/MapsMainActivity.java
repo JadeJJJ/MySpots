@@ -68,6 +68,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ExecutionException;
 
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
@@ -438,7 +439,13 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                 GetDirectionsData getDirectionsData = new GetDirectionsData();
                                 myObject[0] = mMap;
                                 myObject[1] = url;
-                                getDirectionsData.execute(myObject);
+                                try {
+                                    getDirectionsData.execute(myObject).get();
+                                } catch (ExecutionException e) {
+                                    e.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
 
                                 Uri buildUri = Uri.parse("https://maps.googleapis.com/maps/api/distancematrix/json").buildUpon()
                                         .appendQueryParameter("origin",startPos.latitude + "%2C" + startPos.longitude)
@@ -453,7 +460,7 @@ public class MapsMainActivity extends FragmentActivity implements OnMapReadyCall
                                     e.printStackTrace();
                                 }
                                 new FetchDistanceData().execute(urlNearby);
-                                dialog.cancel();
+                                //dialog.cancel();
                             }
 
                         })
