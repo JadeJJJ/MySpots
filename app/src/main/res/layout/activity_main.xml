@@ -12,7 +12,7 @@
         android:layout_width="212dp"
         android:layout_height="141dp"
         android:layout_gravity="center_horizontal"
-        app:srcCompat="@mipmap/ic_launcher" />
+        app:srcCompat="@mipmap/ic_launcher_foreground" />
 
     <TextView
         android:id="@+id/textView"
